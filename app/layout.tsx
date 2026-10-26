@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { Noto_Sans_Malayalam } from "next/font/google";
 import Nav from "@/components/Nav";
@@ -21,7 +22,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className={`${font.className} min-h-screen bg-neutral-50 text-neutral-900`}>
         <header className="bg-white">
           <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4">
-            <Link href="/"><img src="/logo.png" alt="Fatwa Islamonlive" width={272} height={90} className="h-[70px] w-auto" /></Link>
+            <Link href="/"><Image src="/logo.png" alt="Fatwa Islamonlive" width={300} height={99} priority className="h-[70px] w-auto" /></Link>
             <form action="/search" role="search">
               <input name="q" placeholder="Search…" aria-label="Search" className="w-40 rounded-full border border-neutral-300 bg-neutral-50 px-4 py-2 text-sm outline-none transition-all focus:w-56 focus:border-[#2d7c26] sm:w-56 sm:focus:w-72" />
             </form>

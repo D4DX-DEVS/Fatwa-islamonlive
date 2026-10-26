@@ -7,7 +7,7 @@ function Hero({ posts }: { posts: PostCard[] }) {
   const [a, b, c] = posts;
   const tile = (p: PostCard, cls: string, size: string) => (
     <Link href={`/post/${p.id}`} className={`group relative block overflow-hidden rounded-lg ${cls}`}>
-      <Thumb src={p.image} className="absolute inset-0 h-full w-full transition-transform duration-500 group-hover:scale-105" />
+      <Thumb src={p.image} priority className="absolute inset-0 h-full w-full transition-transform duration-500 group-hover:scale-105" />
       <span className={`absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-4 font-semibold leading-snug text-white ${size}`}>{p.title}</span>
     </Link>
   );

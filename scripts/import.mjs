@@ -67,7 +67,9 @@ await Promise.all(Array.from({ length: 8 }, async () => {
   }
 }));
 console.log(`images: ${urls.size} total, ${failed} failed`);
-const rewrite = (html) => html.replace(UPLOAD, local);
+// relative /node/N links are dead (from an older CMS): keep the text, drop the anchor
+const DEAD_LINK = /<a [^>]*href="\/node\/\d+"[^>]*>(.*?)<\/a>/gs;
+const rewrite = (html) => html.replace(UPLOAD, local).replace(DEAD_LINK, "$1");
 
 mkdirSync("data", { recursive: true });
 const db = new DatabaseSync("data/fatwa.db");
