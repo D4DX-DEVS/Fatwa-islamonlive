@@ -27,7 +27,7 @@ function Item({ item, names, nested = false }: { item: MenuItem; names: Map<numb
 export default function Nav({ names }: { names: Map<number, string> }) {
   const all = new Map(names).set(MORE, "മറ്റുള്ളവ");
   return (
-    <nav className="sticky top-0 z-40 bg-[#2d7c26] shadow-md">
+    <nav className="z-40 md:sticky md:top-0 bg-[#2d7c26] shadow-md">
       <ul className="mx-auto flex max-w-6xl flex-wrap px-2 text-sm font-semibold text-white">
         <li><Link href="/" className={link}>ഹോം</Link></li>
         {MENU.map((m) => <Item key={m.id} item={m} names={all} />)}
