@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import BlockTitle from "@/components/BlockTitle";
 import PostList from "@/components/PostList";
 import { author, authorIds, byAuthor } from "@/lib/db";
 
@@ -10,7 +11,7 @@ export default async function Author({ params }: PageProps<"/author/[id]">) {
   if (!a) notFound();
   return (
     <>
-      <h1 className="mb-2 text-2xl font-bold">{a.name}</h1>
+      <BlockTitle>{a.name}</BlockTitle>
       <PostList posts={byAuthor(id)} />
     </>
   );

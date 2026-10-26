@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import BlockTitle from "@/components/BlockTitle";
 import PostList from "@/components/PostList";
 import { byTag, tag, tagIds } from "@/lib/db";
 
@@ -10,7 +11,7 @@ export default async function Tag({ params }: PageProps<"/tag/[id]">) {
   if (!t) notFound();
   return (
     <>
-      <h1 className="mb-2 text-2xl font-bold">#{t.name}</h1>
+      <BlockTitle>#{t.name}</BlockTitle>
       <PostList posts={byTag(id)} />
     </>
   );

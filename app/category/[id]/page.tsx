@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import BlockTitle from "@/components/BlockTitle";
 import PostList from "@/components/PostList";
 import { byCategory, categoryIds, category } from "@/lib/db";
 
@@ -10,7 +11,7 @@ export default async function Category({ params }: PageProps<"/category/[id]">) 
   if (!c) notFound();
   return (
     <>
-      <h1 className="mb-2 text-2xl font-bold">{c.name}</h1>
+      <BlockTitle>{c.name}</BlockTitle>
       <PostList posts={byCategory(id)} />
     </>
   );

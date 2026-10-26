@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import BlockTitle from "@/components/BlockTitle";
 import PostList from "@/components/PostList";
 import { PAGE_SIZE, countAll, latest } from "@/lib/db";
 
@@ -13,7 +14,7 @@ export default async function Page({ params }: PageProps<"/page/[n]">) {
   if (!Number.isInteger(n) || n < 1 || n > last) notFound();
   return (
     <>
-      <h1 className="mb-2 text-2xl font-bold">Page {n}</h1>
+      <BlockTitle>Page {n}</BlockTitle>
       <PostList posts={latest((n - 1) * PAGE_SIZE)} />
       <p className="mt-4 flex gap-4 text-sm text-emerald-700">
         {n > 1 && <Link href={n === 2 ? "/" : `/page/${n - 1}`}>← Newer</Link>}
