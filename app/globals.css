@@ -24,3 +24,10 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.prose-content p, .prose-content ul, .prose-content ol { margin-bottom: 1rem; }
+.prose-content ul { list-style: disc; padding-inline-start: 1.5rem; }
+.prose-content ol { list-style: decimal; padding-inline-start: 1.5rem; }
+.prose-content h2, .prose-content h3 { font-weight: 700; font-size: 1.25rem; margin: 1.5rem 0 .5rem; }
+.prose-content img { max-width: 100%; height: auto; }
+.prose-content a { color: #047857; text-decoration: underline; }
