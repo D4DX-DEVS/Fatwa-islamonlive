@@ -43,7 +43,7 @@ function Block({ title, tabs, names }: { title: string; tabs: number[]; names: M
           <li key={p.id}>
             <Link href={`/post/${p.id}`} className="flex gap-3">
               <Thumb src={p.image} className="h-14 w-20 shrink-0 rounded" />
-              <span className="text-sm font-semibold leading-snug hover:text-[#2d7c26]">{p.title}</span>
+              <span className="min-w-0 break-words text-sm font-semibold leading-snug hover:text-[#2d7c26]">{p.title}</span>
             </Link>
           </li>
         ))}
@@ -59,7 +59,7 @@ export default function Home() {
   return (
     <>
       <Hero posts={hero} />
-      <div className="mt-8 grid items-start gap-6 md:grid-cols-2">
+      <div className="mt-8 grid grid-cols-1 items-start gap-6 md:grid-cols-2">
         {SECTIONS.map((s) => <Block key={s.title} {...s} names={names} />)}
       </div>
       <p className="mt-8 text-center">

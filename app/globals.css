@@ -6,7 +6,9 @@ body { background: #fff; color: #222; }
 .prose-content ul { list-style: disc; padding-inline-start: 1.5rem; }
 .prose-content ol { list-style: decimal; padding-inline-start: 1.5rem; }
 .prose-content h2, .prose-content h3 { font-weight: 700; font-size: 1.25rem; margin: 1.5rem 0 .5rem; }
-.prose-content img { max-width: 100%; height: auto; }
+.prose-content { overflow-wrap: anywhere; }
+.prose-content img, .prose-content iframe, .prose-content video { max-width: 100%; height: auto; }
+.prose-content table { display: block; overflow-x: auto; max-width: 100%; }
 .prose-content a { color: #047857; text-decoration: underline; }
 
 nav > div { scrollbar-width: none; }
