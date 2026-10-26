@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Noto_Sans_Malayalam } from "next/font/google";
-import { categories } from "@/lib/db";
+import Nav from "@/components/Nav";
+import { categories, latest } from "@/lib/db";
 import "./globals.css";
 
 const font = Noto_Sans_Malayalam({ subsets: ["malayalam", "latin"], display: "swap" });
@@ -13,27 +14,28 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   const all = categories();
-  const top = all.filter((c) => c.parent === 0 && c.n > 0);
+  const names = new Map(all.map((c) => [c.id, c.name]));
+  const ticker = latest(0).slice(0, 5);
   return (
     <html lang="ml">
-      <body className={`${font.className} min-h-screen bg-white text-neutral-900`}>
-        <div className="h-6 bg-black" />
-        <header>
-          <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
+      <body className={`${font.className} min-h-screen bg-neutral-50 text-neutral-900`}>
+        <header className="bg-white">
+          <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4">
             <Link href="/"><img src="/logo.png" alt="Fatwa Islamonlive" width={272} height={90} className="h-[70px] w-auto" /></Link>
-            <form action="/search" className="hidden sm:block">
-              <input name="q" placeholder="Search…" aria-label="Search" className="rounded border border-neutral-300 px-3 py-1 text-sm" />
+            <form action="/search" role="search">
+              <input name="q" placeholder="Search…" aria-label="Search" className="w-40 rounded-full border border-neutral-300 bg-neutral-50 px-4 py-2 text-sm outline-none transition-all focus:w-56 focus:border-[#2d7c26] sm:w-56 sm:focus:w-72" />
             </form>
           </div>
-          <nav className="bg-[#2d7c26]">
-            <div className="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-4 text-sm font-semibold text-white">
-              <Link href="/" className="whitespace-nowrap px-3 py-3 hover:bg-[#0e5921]">Home</Link>
-              {top.map((c) => (
-                <Link key={c.id} href={`/category/${c.id}`} className="whitespace-nowrap px-3 py-3 hover:bg-[#0e5921]">{c.name}</Link>
-              ))}
-            </div>
-          </nav>
         </header>
+        <Nav names={names} />
+        <div className="border-b border-neutral-200 bg-white">
+          <div className="mx-auto flex max-w-6xl items-center gap-3 overflow-hidden px-4 py-2 text-sm">
+            <span className="shrink-0 rounded bg-[#dd3333] px-2 py-0.5 text-xs font-bold uppercase text-white">Latest updates</span>
+            <div className="flex gap-6 overflow-x-auto whitespace-nowrap [scrollbar-width:none]">
+              {ticker.map((p) => <Link key={p.id} href={`/post/${p.id}`} className="hover:text-[#2d7c26]">{p.title}</Link>)}
+            </div>
+          </div>
+        </div>
         <main className="mx-auto max-w-6xl px-4 py-6">{children}</main>
         <footer className="mt-10 bg-[#222] text-neutral-300">
           <div className="mx-auto max-w-6xl px-4 py-8">
@@ -44,7 +46,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               ))}
             </p>
           </div>
-          <p className="bg-black py-3 text-center text-xs text-neutral-400">© Fatwa.Islamonlive.in. All Rights Reserved.</p>
+          <p className="bg-black py-3 text-center text-xs text-neutral-400">© Copyright islamonlive.in, All Rights Reserved</p>
         </footer>
       </body>
     </html>

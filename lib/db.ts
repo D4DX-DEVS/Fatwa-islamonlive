@@ -31,13 +31,13 @@ export const category = (id: number) => db.prepare("SELECT id, name, parent FROM
 export const byCategory = (id: number) =>
   db.prepare(`${LIST} JOIN post_categories pc ON pc.post_id = p.id WHERE pc.category_id = ? ORDER BY p.date DESC`).all(id) as PostCard[];
 
-// newest posts in a category or any of its subcategories
-export const inCategoryTree = (id: number, limit: number) =>
+// newest posts across the given categories (direct membership, like the original blocks)
+export const inCategories = (ids: number[], limit: number) =>
   db
     .prepare(
-      `${LIST} WHERE p.id IN (SELECT post_id FROM post_categories WHERE category_id = ? OR category_id IN (SELECT id FROM categories WHERE parent = ?)) ORDER BY p.date DESC LIMIT ?`,
+      `${LIST} WHERE p.id IN (SELECT post_id FROM post_categories WHERE category_id IN (${ids.map(() => "?").join(",")})) ORDER BY p.date DESC LIMIT ?`,
     )
-    .all(id, id, limit) as PostCard[];
+    .all(...ids, limit) as PostCard[];
 
 export const tags = (postId: number) =>
   db.prepare("SELECT t.id, t.name FROM tags t JOIN post_tags pt ON pt.tag_id = t.id WHERE pt.post_id = ?").all(postId) as { id: number; name: string }[];
