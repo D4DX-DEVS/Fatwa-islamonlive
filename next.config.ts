@@ -5,6 +5,8 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   // Images are small and served straight from Cloudflare's asset storage
   images: { unoptimized: true },
+  // admin image uploads go through a server action (5 MB image + form overhead)
+  experimental: { serverActions: { bodySizeLimit: "6mb" } },
   async headers() {
     return [
       {

@@ -1,38 +1,47 @@
-# Deploying to Cloudflare (Workers + D1)
+# Deploying to Cloudflare (Workers + D1 + R2)
 
-The site runs as a Cloudflare Worker (via OpenNext) and reads its data from a D1 database.
-Images are served from the Worker's static assets. Every page renders on request, so admin
-edits show up immediately.
+The site runs as a Cloudflare Worker (via OpenNext). Posts live in a D1 database, images uploaded
+in the admin live in an R2 bucket, and the original WordPress images are static assets of the Worker.
+Every page renders on request, so admin edits show up immediately.
 
-## One-time setup
+## Where each setting lives (important)
+
+The build copies `.env` into the deployed Worker, so **no secret may ever go in `.env`**.
+
+| File (all git-ignored except `wrangler.jsonc`) | Contains | Used by |
+|---|---|---|
+| `.env` | `SITE_URL` only (not secret) | build, runtime |
+| `.dev.vars` | `ADMIN_PASSWORD` for local work | `npm run dev`, `npm run preview` |
+| `.cloudflare.env` | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` (+ unused R2/D1 reference values) | `npm run deploy`, `npm run db:seed:remote` only |
+| `wrangler.jsonc` (committed) | D1 database id, R2 bucket name, `SITE_URL` var | wrangler |
+| Cloudflare secret | `ADMIN_PASSWORD` for production | the live Worker |
+
+The Worker reaches D1 and R2 through bindings (`DB`, `UPLOADS`), so the R2 S3 keys are not needed.
+The API token needs permission to edit Workers, D1 and R2.
+
+## One-time setup (database and bucket already created)
 
 ```bash
-# 1. log in to your Cloudflare account
-npx wrangler login
-
-# 2. create the database; copy the "database_id" it prints
-npx wrangler d1 create fatwa
-```
-
-Put that id in `wrangler.jsonc`:
-
-```jsonc
-"d1_databases": [{ "binding": "DB", "database_name": "fatwa", "database_id": "<paste id>" }]
-```
-
-```bash
-# 3. load all posts into D1  (WARNING: drops and recreates the tables, so run it ONCE,
-#    before you use the admin. Running it again erases admin edits.)
+# 1. load all posts into D1  (WARNING: drops and recreates the tables, so run it ONCE,
+#    before you use the admin. Running it again erases admin edits and uploaded-image links.)
 npm run db:seed:remote
 
-# 4. set the admin password as a secret (it prompts for the value)
+# 2. set the production admin password as a secret (it prompts for the value)
 npx wrangler secret put ADMIN_PASSWORD
 
-# 5. build and deploy
+# 3. build and deploy
 npm run deploy
 ```
 
-`SITE_URL` is already set in `wrangler.jsonc` under `vars`; change it there if the address differs.
+If you don't want to keep an API token in a file, delete `.cloudflare.env`, run `npx wrangler login`
+once, and use `npx opennextjs-cloudflare build && npx opennextjs-cloudflare deploy` instead of the npm scripts.
+
+## Admin images
+
+In the admin form, "Featured image" uploads a JPG, PNG, GIF or WebP (max 5 MB) to R2; the file's
+bytes are checked (not just its name) and SVG is refused. It is served from `/media/...` with a
+one-year cache. Replacing or removing an image, or deleting the post, deletes the file from R2.
+Images from the old WordPress import are untouched.
 
 ## Custom domain
 
@@ -43,12 +52,13 @@ Custom domain → `fatwa.islamonlive.in`. The domain's DNS must be on Cloudflare
 
 | Task | Command |
 |---|---|
-| Local dev (Node, local D1) | `npm run db:seed:local` once, then `npm run dev` (admin password comes from `.env`) |
-| Test on the real Workers runtime | `npm run preview` (admin password comes from `.dev.vars`) |
+| Local dev (Node, local D1/R2) | `npm run db:seed:local` once, then `npm run dev` |
+| Test on the real Workers runtime | `npm run preview` |
 | Publish a new version | `npm run deploy` |
 | Back up the live database | `npx wrangler d1 export fatwa --remote --output backup.sql` |
 
 D1 also keeps 30 days of point-in-time history (`npx wrangler d1 time-travel info fatwa`).
+After changing the D1 database id in `wrangler.jsonc`, run `npm run db:seed:local` again (local data is stored per id).
 
 ## Notes
 
@@ -56,7 +66,6 @@ D1 also keeps 30 days of point-in-time history (`npx wrangler d1 time-travel inf
   D1 database is the source of truth (admin edits live there, not in git).
 - Worker size is about 1.1 MiB compressed, within the free plan's 3 MiB limit.
 - Images are not resized by Cloudflare (`images.unoptimized`), they are served as uploaded.
-- The admin has no image upload yet; new posts show a grey box instead of a picture.
 
 ## Before pointing the real domain at it (go-live checklist)
 
@@ -65,7 +74,7 @@ D1 also keeps 30 days of point-in-time history (`npx wrangler d1 time-travel inf
    Paid also raises the D1 limits (free: 5M rows read and 100k rows written per day).
 2. **Deploy first, test on the temporary address.** After `npm run deploy`, open the
    `https://fatwa.<your-subdomain>.workers.dev` link it prints and click through: home, a post,
-   a category, search, `/admin` (log in, edit a post, undo the edit). Watch for errors with
+   a category, search, `/admin` (log in, edit a post, upload an image, undo). Watch for errors with
    `npx wrangler tail fatwa`.
 3. **Re-import if WordPress changed.** WordPress had 516 posts (newest 2023-08-31) when imported.
    If new posts were published since: `node scripts/import.mjs`, `node scripts/export-d1.mjs`,
@@ -78,3 +87,5 @@ D1 also keeps 30 days of point-in-time history (`npx wrangler d1 time-travel inf
 7. **After launch:** submit `https://fatwa.islamonlive.in/sitemap.xml` in Google Search Console,
    and spot-check old links such as `https://fatwa.islamonlive.in/?p=76451` (they redirect to `/post/76451`).
 8. **Keep a backup of the WordPress site** (files + database) until you are happy.
+9. **Roll the API token and R2 keys you pasted into chat** (Cloudflare dashboard → My Profile → API Tokens,
+   and R2 → Manage API tokens) once everything is deployed, then update `.cloudflare.env`.

@@ -51,25 +51,33 @@ export const authors = () => rows<{ id: number; name: string }>("SELECT id, name
 export const author = (id: number) => row<{ id: number; name: string }>("SELECT id, name FROM authors WHERE id = ?", id);
 export const byAuthor = (id: number) => rows<PostCard>(`${LIST} WHERE p.author_id = ? ORDER BY p.date DESC`, id);
 
-export type PostInput = { title: string; excerpt: string; content: string; author_id: number; categoryIds: number[] };
+// image: undefined = keep the current one, null = remove it, string = new image URL
+export type PostInput = { title: string; excerpt: string; content: string; author_id: number; categoryIds: number[]; image?: string | null };
 const categoryStatements = (id: number, cats: number[]) => [
   d1().prepare("DELETE FROM post_categories WHERE post_id = ?").bind(id),
   ...cats.map((c) => d1().prepare("INSERT OR IGNORE INTO post_categories VALUES(?,?)").bind(id, c)),
 ];
 export const createPost = async (p: PostInput) => {
   const { meta } = await d1()
-    .prepare("INSERT INTO posts(slug, title, excerpt, content, date, author_id) VALUES('', ?, ?, ?, ?, ?)")
-    .bind(p.title, p.excerpt, p.content, new Date().toISOString().slice(0, 19), p.author_id)
+    .prepare("INSERT INTO posts(slug, title, excerpt, content, date, author_id, image) VALUES('', ?, ?, ?, ?, ?, ?)")
+    .bind(p.title, p.excerpt, p.content, new Date().toISOString().slice(0, 19), p.author_id, p.image ?? null)
     .run();
   const id = meta.last_row_id;
   await d1().batch(categoryStatements(id, p.categoryIds));
   return id;
 };
-export const updatePost = (id: number, p: PostInput) =>
-  d1().batch([
-    d1().prepare("UPDATE posts SET title = ?, excerpt = ?, content = ?, author_id = ? WHERE id = ?").bind(p.title, p.excerpt, p.content, p.author_id, id),
+export const updatePost = (id: number, p: PostInput) => {
+  const sets = ["title = ?", "excerpt = ?", "content = ?", "author_id = ?"];
+  const args: unknown[] = [p.title, p.excerpt, p.content, p.author_id];
+  if (p.image !== undefined) {
+    sets.push("image = ?");
+    args.push(p.image);
+  }
+  return d1().batch([
+    d1().prepare(`UPDATE posts SET ${sets.join(", ")} WHERE id = ?`).bind(...args, id),
     ...categoryStatements(id, p.categoryIds),
   ]);
+};
 export const deletePost = (id: number) =>
   d1().batch([
     d1().prepare("DELETE FROM post_categories WHERE post_id = ?").bind(id),

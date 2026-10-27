@@ -6,7 +6,7 @@ export default async function New({ searchParams }: PageProps<"/admin/new">) {
   return (
     <>
       <h1 className="mb-4 text-2xl font-bold">New post</h1>
-      <PostForm error={!!(await searchParams).error} />
+      <PostForm error={String((await searchParams).error ?? "")} />
     </>
   );
 }
