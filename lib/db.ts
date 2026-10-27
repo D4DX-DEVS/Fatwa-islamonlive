@@ -26,7 +26,9 @@ export const postCategories = (id: number) =>
   rows<Category>("SELECT c.id, c.name, c.parent FROM categories c JOIN post_categories pc ON pc.category_id = c.id WHERE pc.post_id = ?", id);
 
 export const categories = () =>
-  rows<Category & { n: number }>("SELECT c.id, c.name, c.parent, (SELECT COUNT(*) FROM post_categories WHERE category_id = c.id) AS n FROM categories c ORDER BY c.name");
+  rows<Category & { n: number }>(
+    "SELECT c.id, c.name, c.parent, COUNT(pc.post_id) AS n FROM categories c LEFT JOIN post_categories pc ON pc.category_id = c.id GROUP BY c.id ORDER BY c.name",
+  );
 export const category = (id: number) => row<Category>("SELECT id, name, parent FROM categories WHERE id = ?", id);
 export const byCategory = (id: number) =>
   rows<PostCard>(`${LIST} JOIN post_categories pc ON pc.post_id = p.id WHERE pc.category_id = ? ORDER BY p.date DESC`, id);

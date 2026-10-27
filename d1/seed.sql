@@ -7,6 +7,9 @@ CREATE TABLE post_categories(post_id INTEGER, category_id INTEGER, PRIMARY KEY(p
 CREATE TABLE tags(id INTEGER PRIMARY KEY, name TEXT, slug TEXT);
 CREATE TABLE post_tags(post_id INTEGER, tag_id INTEGER, PRIMARY KEY(post_id, tag_id));
 CREATE INDEX posts_date ON posts(date DESC);
+CREATE INDEX pc_category ON post_categories(category_id);
+CREATE INDEX pt_tag ON post_tags(tag_id);
+CREATE INDEX posts_author ON posts(author_id, date DESC);
 INSERT INTO categories VALUES(1,'Q&A','uncategorized',0);
 INSERT INTO categories VALUES(31,'ഫിഖ്ഹ്','fiqh',0);
 INSERT INTO categories VALUES(34,'ദൈവം','the-god',0);

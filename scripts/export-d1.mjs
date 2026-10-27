@@ -18,6 +18,10 @@ const out = [
   `CREATE TABLE tags(id INTEGER PRIMARY KEY, name TEXT, slug TEXT);`,
   `CREATE TABLE post_tags(post_id INTEGER, tag_id INTEGER, PRIMARY KEY(post_id, tag_id));`,
   `CREATE INDEX posts_date ON posts(date DESC);`,
+  // without these, category/tag/author lookups and the per-category counts scan whole tables on every page view
+  `CREATE INDEX pc_category ON post_categories(category_id);`,
+  `CREATE INDEX pt_tag ON post_tags(tag_id);`,
+  `CREATE INDEX posts_author ON posts(author_id, date DESC);`,
 ];
 
 const insert = (table, row) => `INSERT INTO ${table} VALUES(${Object.values(row).map(q).join(",")});`;

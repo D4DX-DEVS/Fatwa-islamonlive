@@ -9,7 +9,11 @@ const secret = () => {
 };
 const sign = () => createHmac("sha256", secret()).update("admin").digest("hex");
 
+// With no ADMIN_PASSWORD configured the admin stays locked (nobody can log in) instead of erroring
+const enabled = () => !!process.env.ADMIN_PASSWORD;
+
 export const checkPassword = (input: string) => {
+  if (!enabled()) return false;
   const a = createHmac("sha256", "x").update(input).digest();
   const b = createHmac("sha256", "x").update(secret()).digest();
   return timingSafeEqual(a, b);
@@ -22,6 +26,7 @@ export async function clearSession() {
   (await cookies()).delete("admin");
 }
 export async function isAdmin() {
+  if (!enabled()) return false;
   const v = (await cookies()).get("admin")?.value ?? "";
   const ok = sign();
   return v.length === ok.length && timingSafeEqual(Buffer.from(v), Buffer.from(ok));

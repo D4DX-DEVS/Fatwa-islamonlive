@@ -1,0 +1,5 @@
+# Uploaded images never change under the same filename: let browsers keep them for a month
+/uploads/*
+  Cache-Control: public, max-age=2592000
+/logo.png
+  Cache-Control: public, max-age=2592000
