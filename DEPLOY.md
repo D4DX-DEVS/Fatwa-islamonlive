@@ -6,13 +6,14 @@ Every page renders on request, so admin edits show up immediately.
 
 ## Where each setting lives (important)
 
-The build copies `.env` into the deployed Worker, so **no secret may ever go in `.env`**.
+`.env` is the main settings file (Cloudflare credentials included). The build copies `.env` into the Worker,
+so `npm run deploy` runs `scripts/strip-env.mjs` to keep only `SITE_URL` there. **Always deploy with `npm run deploy`**,
+never `opennextjs-cloudflare deploy` directly, or the secrets ship with the site.
 
 | File (all git-ignored except `wrangler.jsonc`) | Contains | Used by |
 |---|---|---|
-| `.env` | `SITE_URL` only (not secret) | build, runtime |
+| `.env` | `SITE_URL`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` (+ unused R2/D1 reference values) | build, `npm run deploy`, `npm run db:seed:remote`, `npm run cf` |
 | `.dev.vars` | `ADMIN_PASSWORD` for local work | `npm run dev`, `npm run preview` |
-| `.cloudflare.env` | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` (+ unused R2/D1 reference values) | `npm run deploy`, `npm run db:seed:remote` only |
 | `wrangler.jsonc` (committed) | D1 database id, R2 bucket name, `SITE_URL` var | wrangler |
 | Cloudflare secret | `ADMIN_PASSWORD` for production | the live Worker |
 
@@ -33,7 +34,7 @@ npm run deploy
 npm run cf -- secret put ADMIN_PASSWORD
 ```
 
-If you don't want to keep an API token in a file, delete `.cloudflare.env`, run `npx wrangler login`
+If you don't want to keep an API token in a file, delete the Cloudflare lines from `.env`, run `npx wrangler login`
 once, and use `npx opennextjs-cloudflare build && npx opennextjs-cloudflare deploy` instead of the npm scripts.
 
 ## Admin images
@@ -88,4 +89,4 @@ After changing the D1 database id in `wrangler.jsonc`, run `npm run db:seed:loca
    and spot-check old links such as `https://fatwa.islamonlive.in/?p=76451` (they redirect to `/post/76451`).
 8. **Keep a backup of the WordPress site** (files + database) until you are happy.
 9. **Roll the API token and R2 keys you pasted into chat** (Cloudflare dashboard → My Profile → API Tokens,
-   and R2 → Manage API tokens) once everything is deployed, then update `.cloudflare.env`.
+   and R2 → Manage API tokens) once everything is deployed, then update `.env`.
