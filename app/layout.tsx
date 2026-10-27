@@ -48,6 +48,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
             <nav aria-label="Footer" className="mb-6 flex flex-wrap gap-x-6 gap-y-2 text-sm font-semibold text-white">
               {FOOTER_LINKS.map((l) => <a key={l.href} href={l.href} className="hover:text-[#7bc96f]">{l.label}</a>)}
               <Link href="/feed.xml" className="hover:text-[#7bc96f]">RSS</Link>
+              <Link href="/admin" className="text-neutral-400 hover:text-[#7bc96f]">Admin</Link>
             </nav>
             <h2 className="mb-3 border-b border-neutral-600 pb-2 font-bold text-white">Categories</h2>
             <p className="flex flex-wrap gap-x-4 gap-y-1 text-xs">

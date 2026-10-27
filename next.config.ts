@@ -35,3 +35,8 @@ export default nextConfig;
 
 // lets `next dev` use the D1 binding from wrangler.jsonc
 initOpenNextCloudflareForDev();
+
+// `next dev` only: load the local admin password (node --env-file breaks Next's child process on Node 24)
+if (process.env.NODE_ENV === "development") {
+  try { process.loadEnvFile(".dev.vars"); } catch { /* no local password file: /admin stays locked */ }
+}
