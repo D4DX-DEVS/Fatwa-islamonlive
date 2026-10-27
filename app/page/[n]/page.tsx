@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import BlockTitle from "@/components/BlockTitle";
@@ -6,6 +7,10 @@ import { PAGE_SIZE, countAll, latest } from "@/lib/db";
 
 export function generateStaticParams() {
   return Array.from({ length: Math.ceil(countAll() / PAGE_SIZE) }, (_, i) => ({ n: String(i + 1) }));
+}
+
+export async function generateMetadata({ params }: PageProps<"/page/[n]">): Promise<Metadata> {
+  return { title: `Page ${(await params).n}` };
 }
 
 export default async function Page({ params }: PageProps<"/page/[n]">) {

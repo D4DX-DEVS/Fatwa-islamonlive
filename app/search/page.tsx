@@ -1,6 +1,9 @@
+import type { Metadata } from "next";
 import BlockTitle from "@/components/BlockTitle";
 import PostList from "@/components/PostList";
 import { search } from "@/lib/db";
+
+export const metadata: Metadata = { title: "Search", robots: { index: false } };
 
 export default async function Search({ searchParams }: PageProps<"/search">) {
   const raw = (await searchParams).q;

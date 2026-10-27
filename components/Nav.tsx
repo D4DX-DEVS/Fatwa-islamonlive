@@ -4,25 +4,25 @@ import { MENU, MENU_MORE, type MenuItem } from "@/lib/site";
 const link = "block whitespace-nowrap px-3 py-3 transition-colors hover:bg-white/15 focus-visible:bg-white/15";
 const MORE = -1;
 
-// flip: open sub-menus to the left (for items near the right edge, so they stay on screen)
-function Item({ item, names, nested = false, flip = false }: { item: MenuItem; names: Map<number, string>; nested?: boolean; flip?: boolean }) {
+function Item({ item, names, nested = false }: { item: MenuItem; names: Map<number, string>; nested?: boolean }) {
   const label = names.get(item.id);
   const a =
     item.id === MORE ? (
       <span tabIndex={0} className={`${link} cursor-default`}>{label} ▾</span>
     ) : (
-      <Link href={`/category/${item.id}`} className={link}>{label}{item.children && (nested ? (flip ? " ‹" : " ›") : " ▾")}</Link>
+      <Link href={`/category/${item.id}`} className={link}>{label}{item.children && " ▾"}</Link>
     );
   if (!item.children) return <li>{a}</li>;
-  // phones: top-level menus span the full bar and sub-menus are hidden (all categories are also in the footer)
+  // top-level menus drop down; sub-menus open inline under their parent so they never leave the screen
   const pos = nested
-    ? `hidden top-0 rounded-lg md:block ${flip ? "right-full" : "left-full"}`
-    : `top-full left-0 right-0 rounded-b-lg md:min-w-48 ${item.id === MORE ? "md:left-auto" : "md:right-auto"}`;
+    ? "hidden bg-black/20 pl-3 group-focus-within:block group-hover:block"
+    : `invisible absolute top-full left-0 right-0 z-30 min-w-48 rounded-b-lg bg-[#1f5c1a] py-1 shadow-xl group-focus-within:visible group-hover:visible ${item.id === MORE ? "md:left-auto" : "md:right-auto"}`;
   return (
-    <li className="group md:relative">
+    // "Others" sits at the row's right end and can wrap on mid widths, so only pin it to its button on wide screens
+    <li className={`group ${item.id === MORE ? "lg:relative" : "md:relative"}`}>
       {a}
-      <ul className={`invisible absolute z-30 min-w-48 bg-[#1f5c1a] py-1 shadow-xl group-focus-within:visible group-hover:visible ${pos}`}>
-        {item.children.map((c) => <Item key={c.id} item={c} names={names} nested flip={flip || item.id === MORE} />)}
+      <ul className={pos}>
+        {item.children.map((c) => <Item key={c.id} item={c} names={names} nested />)}
       </ul>
     </li>
   );
