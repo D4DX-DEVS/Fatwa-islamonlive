@@ -62,6 +62,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
     const v = sp[key];
     if (typeof v === "string" && /^\d+$/.test(v)) permanentRedirect(`/${route}/${v}`);
   }
+  if (sp.feed) permanentRedirect("/feed.xml");
   if (typeof sp.s === "string" && sp.s) permanentRedirect(`/search?q=${encodeURIComponent(sp.s)}`);
 
   const recent = await latest(0);

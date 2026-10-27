@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Noto_Sans_Malayalam } from "next/font/google";
 import Nav from "@/components/Nav";
 import { categories, latest } from "@/lib/db";
+import { FOOTER_LINKS } from "@/lib/site";
 import "./globals.css";
 
 // Every page reads D1 per request (no build-time database, admin edits show instantly)
@@ -14,6 +15,7 @@ const font = Noto_Sans_Malayalam({ subsets: ["malayalam", "latin"], display: "sw
 export const metadata: Metadata = {
   title: { default: "Fatwa Islamonlive", template: "%s | Fatwa Islamonlive" },
   description: "The one and only comprehensive Fatwa portal in Malayalam",
+  alternates: { types: { "application/rss+xml": "/feed.xml" } },
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
@@ -43,6 +45,10 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         <main className="mx-auto max-w-6xl px-4 py-6">{children}</main>
         <footer className="mt-10 bg-[#222] text-neutral-300">
           <div className="mx-auto max-w-6xl px-4 py-8">
+            <nav aria-label="Footer" className="mb-6 flex flex-wrap gap-x-6 gap-y-2 text-sm font-semibold text-white">
+              {FOOTER_LINKS.map((l) => <a key={l.href} href={l.href} className="hover:text-[#7bc96f]">{l.label}</a>)}
+              <Link href="/feed.xml" className="hover:text-[#7bc96f]">RSS</Link>
+            </nav>
             <h2 className="mb-3 border-b border-neutral-600 pb-2 font-bold text-white">Categories</h2>
             <p className="flex flex-wrap gap-x-4 gap-y-1 text-xs">
               {all.filter((c) => c.n > 0).map((c) => (

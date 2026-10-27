@@ -14,8 +14,16 @@ export const MENU: MenuItem[] = [
 export const MENU_MORE: MenuItem[] = [
   { id: 49, children: kids(50, 51, 52, 53) },
   ...kids(54, 55, 56),
-  { id: 57, children: kids(58, 59) },
-  ...kids(60, 62, 61, 64, 63, 66, 46, 47, 48),
+  ...kids(57, 58, 59, 60, 62, 61, 64, 63, 66, 46, 47, 48),
+];
+
+// The original's footer menu (external pages on the main islamonlive.in site and the donation page)
+export const FOOTER_LINKS = [
+  { label: "Support Us", href: "https://pages.razorpay.com/pl_Qic33jB70iIWlA/view" },
+  { label: "About Us", href: "https://islamonlive.in/about/" },
+  { label: "Privacy", href: "https://islamonlive.in/privacy-policy/" },
+  { label: "Terms of Use", href: "https://islamonlive.in/terms-of-use/" },
+  { label: "Contact us", href: "https://islamonlive.in/contact/" },
 ];
 
 // Homepage blocks, in page order. `tabs` are the category filters shown on each block;
