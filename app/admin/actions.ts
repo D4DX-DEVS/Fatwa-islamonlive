@@ -1,6 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { checkPassword, clearSession, requireAdmin, setSession } from "@/lib/auth";
 import { createPost, deletePost, updatePost } from "@/lib/db";
@@ -28,15 +27,13 @@ export async function save(id: number | null, formData: FormData) {
     author_id: Number(formData.get("author_id")) || 1,
     categoryIds: formData.getAll("categories").map(Number).filter(Number.isInteger),
   };
-  const postId = id ?? createPost(input);
-  if (id) updatePost(id, input);
-  revalidatePath("/", "layout");
+  const postId = id ?? (await createPost(input));
+  if (id) await updatePost(id, input);
   redirect(`/post/${postId}`);
 }
 
 export async function remove(id: number) {
   await requireAdmin();
-  deletePost(id);
-  revalidatePath("/", "layout");
+  await deletePost(id);
   redirect("/admin");
 }

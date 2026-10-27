@@ -3,7 +3,8 @@ import { authors, categories, type Post } from "@/lib/db";
 
 const input = "w-full rounded border border-neutral-300 px-3 py-2";
 
-export default function PostForm({ post, selected = [], error }: { post?: Post; selected?: number[]; error?: boolean }) {
+export default async function PostForm({ post, selected = [], error }: { post?: Post; selected?: number[]; error?: boolean }) {
+  const [authorList, categoryList] = await Promise.all([authors(), categories()]);
   return (
     <>
       <form action={save.bind(null, post?.id ?? null)} className="space-y-4">
@@ -13,12 +14,12 @@ export default function PostForm({ post, selected = [], error }: { post?: Post; 
         <label className="block">Content (HTML)<textarea name="content" defaultValue={post?.content} required rows={16} className={`${input} font-mono text-sm`} /></label>
         <label className="block">Author
           <select name="author_id" defaultValue={post?.author_id} className={input}>
-            {authors().map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+            {authorList.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
           </select>
         </label>
         <fieldset className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
           <legend className="mb-1">Categories</legend>
-          {categories().map((c) => (
+          {categoryList.map((c) => (
             <label key={c.id}><input type="checkbox" name="categories" value={c.id} defaultChecked={selected.includes(c.id)} /> {c.name}</label>
           ))}
         </fieldset>

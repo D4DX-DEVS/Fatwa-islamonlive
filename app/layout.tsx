@@ -6,6 +6,9 @@ import Nav from "@/components/Nav";
 import { categories, latest } from "@/lib/db";
 import "./globals.css";
 
+// Every page reads D1 per request (no build-time database, admin edits show instantly)
+export const dynamic = "force-dynamic";
+
 const font = Noto_Sans_Malayalam({ subsets: ["malayalam", "latin"], display: "swap" });
 
 export const metadata: Metadata = {
@@ -13,10 +16,10 @@ export const metadata: Metadata = {
   description: "The one and only comprehensive Fatwa portal in Malayalam",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
-  const all = categories();
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const all = await categories();
   const names = new Map(all.map((c) => [c.id, c.name]));
-  const ticker = latest(0).slice(0, 5);
+  const ticker = (await latest(0)).slice(0, 5);
   return (
     <html lang="ml">
       <body className={`${font.className} min-h-screen bg-neutral-50 text-neutral-900`}>

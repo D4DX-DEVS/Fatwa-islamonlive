@@ -20,11 +20,11 @@ export default async function Admin({ searchParams }: PageProps<"/admin">) {
     );
   }
   const q = typeof sp.q === "string" ? sp.q.trim() : "";
-  const posts = q ? search(q) : latest(0);
+  const posts = await (q ? search(q) : latest(0));
   return (
     <>
       <div className="mb-4 flex items-center gap-4">
-        <h1 className="text-2xl font-bold">Admin ({countAll()} posts)</h1>
+        <h1 className="text-2xl font-bold">Admin ({await countAll()} posts)</h1>
         <Link href="/admin/new" className="rounded bg-emerald-700 px-3 py-1 text-white">New post</Link>
         <form action={logout} className="ml-auto"><button className="text-sm underline">Log out</button></form>
       </div>

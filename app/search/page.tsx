@@ -11,7 +11,7 @@ export default async function Search({ searchParams }: PageProps<"/search">) {
   return (
     <>
       <BlockTitle>Search{q && `: ${q}`}</BlockTitle>
-      {q ? <PostList posts={search(q)} /> : <p className="text-neutral-500">Type a query.</p>}
+      {q ? <PostList posts={await search(q)} /> : <p className="text-neutral-500">Type a query.</p>}
     </>
   );
 }

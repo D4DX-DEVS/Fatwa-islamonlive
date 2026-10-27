@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { permanentRedirect } from "next/navigation";
 import Thumb from "@/components/Thumb";
 import { categories, inCategories, latest, type PostCard } from "@/lib/db";
 import { SECTIONS } from "@/lib/site";
@@ -20,8 +21,8 @@ function Hero({ posts }: { posts: PostCard[] }) {
   );
 }
 
-function Block({ title, tabs, names }: { title: string; tabs: number[]; names: Map<number, string> }) {
-  const [first, ...rest] = inCategories(tabs, 5);
+async function Block({ title, tabs, names }: { title: string; tabs: number[]; names: Map<number, string> }) {
+  const [first, ...rest] = await inCategories(tabs, 5);
   if (!first) return null;
   return (
     <section className="rounded-lg bg-white p-4 shadow-sm">
@@ -52,10 +53,20 @@ function Block({ title, tabs, names }: { title: string; tabs: number[]; names: M
   );
 }
 
-export default function Home() {
-  const recent = latest(0);
+// Old WordPress plain-permalink URLs (/?p=ID etc.) -> new routes
+const LEGACY = { p: "post", cat: "category", author: "author" } as const;
+
+export default async function Home({ searchParams }: PageProps<"/">) {
+  const sp = await searchParams;
+  for (const [key, route] of Object.entries(LEGACY)) {
+    const v = sp[key];
+    if (typeof v === "string" && /^\d+$/.test(v)) permanentRedirect(`/${route}/${v}`);
+  }
+  if (typeof sp.s === "string" && sp.s) permanentRedirect(`/search?q=${encodeURIComponent(sp.s)}`);
+
+  const recent = await latest(0);
   const hero = [...recent.filter((p) => p.image), ...recent.filter((p) => !p.image)].slice(0, 3);
-  const names = new Map(categories().map((c) => [c.id, c.name]));
+  const names = new Map((await categories()).map((c) => [c.id, c.name]));
   return (
     <>
       <Hero posts={hero} />

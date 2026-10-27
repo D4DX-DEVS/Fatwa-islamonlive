@@ -1,22 +1,19 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { post, postCategories, postIds, tags } from "@/lib/db";
-
-export const generateStaticParams = () => postIds().map((id) => ({ id }));
+import { post, postCategories, tags } from "@/lib/db";
 
 export async function generateMetadata({ params }: PageProps<"/post/[id]">): Promise<Metadata> {
-  const p = post(Number((await params).id));
+  const p = await post(Number((await params).id));
   return p
     ? { title: p.title, description: p.excerpt.slice(0, 160), openGraph: { title: p.title, description: p.excerpt.slice(0, 160), type: "article", ...(p.image && { images: [p.image] }) } }
     : {};
 }
 
 export default async function Post({ params }: PageProps<"/post/[id]">) {
-  const p = post(Number((await params).id));
+  const p = await post(Number((await params).id));
   if (!p) notFound();
-  const cats = postCategories(p.id);
-  const tg = tags(p.id);
+  const [cats, tg] = await Promise.all([postCategories(p.id), tags(p.id)]);
   return (
     <article>
       <h1 className="text-3xl font-bold leading-tight">{p.title}</h1>
