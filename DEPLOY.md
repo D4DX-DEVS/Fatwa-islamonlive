@@ -26,11 +26,11 @@ The API token needs permission to edit Workers, D1 and R2.
 #    before you use the admin. Running it again erases admin edits and uploaded-image links.)
 npm run db:seed:remote
 
-# 2. set the production admin password as a secret (it prompts for the value)
-npx wrangler secret put ADMIN_PASSWORD
-
-# 3. build and deploy
+# 2. build and deploy (the first deploy creates the Worker)
 npm run deploy
+
+# 3. set the production admin password as a secret (it prompts for the value; until then /admin stays locked)
+npm run cf -- secret put ADMIN_PASSWORD
 ```
 
 If you don't want to keep an API token in a file, delete `.cloudflare.env`, run `npx wrangler login`
@@ -55,9 +55,9 @@ Custom domain → `fatwa.islamonlive.in`. The domain's DNS must be on Cloudflare
 | Local dev (Node, local D1/R2) | `npm run db:seed:local` once, then `npm run dev` |
 | Test on the real Workers runtime | `npm run preview` |
 | Publish a new version | `npm run deploy` |
-| Back up the live database | `npx wrangler d1 export fatwa --remote --output backup.sql` |
+| Back up the live database | `npm run cf -- d1 export fatwa --remote --output backup.sql` |
 
-D1 also keeps 30 days of point-in-time history (`npx wrangler d1 time-travel info fatwa`).
+D1 also keeps 30 days of point-in-time history (`npm run cf -- d1 time-travel info fatwa`).
 After changing the D1 database id in `wrangler.jsonc`, run `npm run db:seed:local` again (local data is stored per id).
 
 ## Notes
@@ -75,7 +75,7 @@ After changing the D1 database id in `wrangler.jsonc`, run `npm run db:seed:loca
 2. **Deploy first, test on the temporary address.** After `npm run deploy`, open the
    `https://fatwa.<your-subdomain>.workers.dev` link it prints and click through: home, a post,
    a category, search, `/admin` (log in, edit a post, upload an image, undo). Watch for errors with
-   `npx wrangler tail fatwa`.
+   `npm run cf -- tail fatwa`.
 3. **Re-import if WordPress changed.** WordPress had 516 posts (newest 2023-08-31) when imported.
    If new posts were published since: `node scripts/import.mjs`, `node scripts/export-d1.mjs`,
    then `npm run db:seed:remote` (this replaces all data, so do it before using the admin).
