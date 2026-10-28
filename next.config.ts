@@ -19,6 +19,7 @@ const nextConfig: NextConfig = {
       // imported images never change under the same filename
       { source: "/uploads/:path*", headers: [{ key: "Cache-Control", value: "public, max-age=2592000" }] },
       { source: "/logo.png", headers: [{ key: "Cache-Control", value: "public, max-age=2592000" }] },
+      { source: "/islamonlive-logo.png", headers: [{ key: "Cache-Control", value: "public, max-age=2592000" }] },
     ];
   },
   turbopack: {
