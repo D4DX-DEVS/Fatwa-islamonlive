@@ -149,3 +149,11 @@ export const search = (q: string) => {
   const like = `%${q.replace(/[%_\\]/g, "\\$&")}%`;
   return rows<PostCard>(`${LIST} WHERE p.title LIKE ? ESCAPE '\\' OR p.content LIKE ? ESCAPE '\\' ORDER BY p.date DESC LIMIT 50`, like, like);
 };
+
+// slugs are stored percent-encoded and lowercase (as WordPress emitted them); the URL may arrive decoded or encoded
+export const postIdBySlug = async (slug: string) => {
+  let decoded = slug;
+  try { decoded = decodeURIComponent(slug); } catch { /* keep as is */ }
+  const r = await row<{ id: number }>("SELECT id FROM posts WHERE slug IN (?, ?) LIMIT 1", slug.toLowerCase(), encodeURIComponent(decoded).toLowerCase());
+  return r?.id ?? null;
+};
