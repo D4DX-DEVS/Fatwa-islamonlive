@@ -13,7 +13,7 @@ export default async function SiteShell({ children }: { children: React.ReactNod
     <>
       <header className="bg-white">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-4">
-          <Link href="/"><Image src="/logo.png" alt="Fatwa Islamonlive" width={300} height={99} priority className="h-[60px] w-auto shrink sm:h-[70px]" /></Link>
+          <Link href="/"><Image src="/islamonlive-logo.png" alt="Islamonlive" width={298} height={81} priority className="h-[54px] w-auto shrink sm:h-[64px]" /></Link>
           <form action="/search" role="search">
             <input name="q" placeholder="Search…" aria-label="Search" className="w-28 rounded-full border border-neutral-300 bg-neutral-50 px-4 py-2 text-sm outline-none transition-all focus:w-36 focus:border-[#2d7c26] sm:w-56 sm:focus:w-72" />
           </form>
