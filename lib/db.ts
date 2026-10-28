@@ -77,6 +77,18 @@ export const post = (id: number) =>
 export const postCategories = (id: number) =>
   rows<Category>("SELECT c.id, c.name, c.parent FROM categories c JOIN post_categories pc ON pc.category_id = c.id WHERE pc.post_id = ?", id);
 
+// category names for a page of posts in one query (admin list)
+export const categoryNames = async (postIds: number[]) => {
+  const names = new Map<number, string[]>();
+  if (!postIds.length) return names;
+  const found = await rows<{ post_id: number; name: string }>(
+    `SELECT pc.post_id, c.name FROM post_categories pc JOIN categories c ON c.id = pc.category_id WHERE pc.post_id IN (${postIds.map(() => "?").join(",")}) ORDER BY c.name`,
+    ...postIds,
+  );
+  for (const { post_id, name } of found) names.set(post_id, [...(names.get(post_id) ?? []), name]);
+  return names;
+};
+
 export const categories = () =>
   rows<Category & { n: number }>(
     "SELECT c.id, c.name, c.parent, COUNT(pc.post_id) AS n FROM categories c LEFT JOIN post_categories pc ON pc.category_id = c.id GROUP BY c.id ORDER BY c.name",
