@@ -43,7 +43,7 @@ export async function save(id: number | null, formData: FormData) {
   const postId = id ?? (await createPost(input));
   if (id) await updatePost(id, input);
   if (image !== undefined) await removeImage(before?.image);
-  redirect(`/post/${postId}`);
+  redirect(`/admin/${postId}?saved=1`);
 }
 
 export async function remove(id: number) {

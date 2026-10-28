@@ -2,20 +2,24 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { isAdmin } from "@/lib/auth";
 import { PAGE_SIZE, categoryNames, countAll, latest, search } from "@/lib/db";
-import { login, logout } from "./actions";
+import { login } from "./actions";
 
 export const metadata: Metadata = { title: "Admin", robots: { index: false } };
+
+const field = "w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-[#2d7c26] focus:ring-2 focus:ring-[#2d7c26]/20";
 
 export default async function Admin({ searchParams }: PageProps<"/admin">) {
   const sp = await searchParams;
   if (!(await isAdmin())) {
-    const error = sp.error;
     return (
-      <form action={login} className="max-w-xs space-y-3">
-        <h1 className="text-2xl font-bold">Admin</h1>
-        {error && <p className="text-red-600">Wrong password.</p>}
-        <input name="password" type="password" placeholder="Password" required className="w-full rounded border border-neutral-300 px-3 py-2" />
-        <button className="rounded bg-emerald-700 px-4 py-2 text-white">Log in</button>
+      <form action={login} className="mx-auto mt-12 w-full max-w-sm space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div>
+          <h1 className="text-xl font-bold">Sign in</h1>
+          <p className="text-sm text-slate-500">Enter the admin password to manage posts.</p>
+        </div>
+        {sp.error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">Wrong password. Try again.</p>}
+        <input name="password" type="password" placeholder="Password" aria-label="Password" required autoFocus className={field} />
+        <button className="w-full rounded-lg bg-[#2d7c26] px-4 py-2 font-semibold text-white hover:bg-[#256620]">Sign in</button>
       </form>
     );
   }
@@ -27,31 +31,40 @@ export default async function Admin({ searchParams }: PageProps<"/admin">) {
   const cats = await categoryNames(posts.map((p) => p.id));
   return (
     <>
-      <div className="mb-4 flex items-center gap-4">
-        <h1 className="text-2xl font-bold">Admin ({total} posts)</h1>
-        <Link href="/admin/new" className="rounded bg-emerald-700 px-3 py-1 text-white">New post</Link>
-        <form action={logout} className="ml-auto"><button className="text-sm underline">Log out</button></form>
+      <div className="mb-5 flex flex-wrap items-center gap-3">
+        <h1 className="text-2xl font-bold">Posts</h1>
+        <span className="rounded-full bg-slate-200 px-2.5 py-0.5 text-xs font-semibold text-slate-600">{total}</span>
+        <Link href="/admin/new" className="ml-auto rounded-lg bg-[#2d7c26] px-4 py-2 text-sm font-semibold text-white hover:bg-[#256620]">+ New post</Link>
       </div>
-      <form className="mb-3"><input name="q" defaultValue={q} placeholder="Find a post to edit…" className="w-full rounded border border-neutral-300 px-3 py-1" /></form>
-      <p className="mb-2 text-sm text-neutral-500">{q ? `Results for "${q}"` : `Page ${page} of ${last}`}</p>
-      <ul className="divide-y divide-neutral-200">
-        {posts.map((p) => (
-          <li key={p.id} className="flex justify-between gap-4 py-2">
-            <div className="min-w-0 break-words">
-              <Link href={`/post/${p.id}`} className="hover:text-[#2d7c26]">{p.title}</Link>
-              <p className="text-xs text-neutral-400">
-                {[p.date.slice(0, 10), p.author, cats.get(p.id)?.join(", ")].filter(Boolean).join(" · ")}
-              </p>
-            </div>
-            <Link href={`/admin/${p.id}`} className="shrink-0 text-emerald-700">Edit</Link>
-          </li>
-        ))}
-      </ul>
+      <form className="mb-4 flex gap-2">
+        <input name="q" defaultValue={q} placeholder="Search posts by title or text…" aria-label="Search posts" className={field} />
+        <button className="shrink-0 rounded-lg border border-slate-300 bg-white px-4 text-sm font-semibold hover:bg-slate-100">Search</button>
+        {q && <Link href="/admin" className="flex shrink-0 items-center px-2 text-sm text-slate-500 hover:text-slate-900">Clear</Link>}
+      </form>
+      <p className="mb-2 text-sm text-slate-500">{q ? `${posts.length} result${posts.length === 1 ? "" : "s"} for “${q}”` : `Page ${page} of ${last}`}</p>
+      {posts.length ? (
+        <ul className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200 bg-white">
+          {posts.map((p) => (
+            <li key={p.id} className="flex items-center gap-4 px-4 py-3 hover:bg-slate-50">
+              <div className="min-w-0 flex-1 break-words">
+                <Link href={`/admin/${p.id}`} className="font-medium hover:text-[#2d7c26]">{p.title}</Link>
+                <p className="mt-0.5 text-xs text-slate-500">
+                  {[p.date.slice(0, 10), p.author, cats.get(p.id)?.join(", ")].filter(Boolean).join(" · ")}
+                </p>
+              </div>
+              <Link href={`/post/${p.id}`} target="_blank" className="shrink-0 text-sm text-slate-500 hover:text-slate-900">View ↗</Link>
+              <Link href={`/admin/${p.id}`} className="shrink-0 rounded-lg border border-slate-300 px-3 py-1 text-sm font-semibold hover:bg-white">Edit</Link>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="rounded-xl border border-dashed border-slate-300 bg-white px-4 py-10 text-center text-slate-500">No posts found.</p>
+      )}
       {!q && last > 1 && (
-        <p className="mt-4 flex gap-4 text-sm text-emerald-700">
-          {page > 1 && <Link href={`/admin?page=${page - 1}`}>← Newer</Link>}
-          {page < last && <Link href={`/admin?page=${page + 1}`}>Older →</Link>}
-        </p>
+        <div className="mt-4 flex items-center justify-between text-sm">
+          {page > 1 ? <Link href={`/admin?page=${page - 1}`} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 font-semibold hover:bg-slate-100">← Newer</Link> : <span />}
+          {page < last ? <Link href={`/admin?page=${page + 1}`} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 font-semibold hover:bg-slate-100">Older →</Link> : <span />}
+        </div>
       )}
     </>
   );

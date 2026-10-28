@@ -8,10 +8,6 @@ export default async function Edit({ params, searchParams }: PageProps<"/admin/[
   const id = Number((await params).id);
   const p = await post(id);
   if (!p) notFound();
-  return (
-    <>
-      <h1 className="mb-4 text-2xl font-bold">Edit post {id}</h1>
-      <PostForm post={p} selected={(await postCategories(id)).map((c) => c.id)} error={String((await searchParams).error ?? "")} />
-    </>
-  );
+  const sp = await searchParams;
+  return <PostForm post={p} selected={(await postCategories(id)).map((c) => c.id)} error={String(sp.error ?? "")} saved={!!sp.saved} />;
 }
