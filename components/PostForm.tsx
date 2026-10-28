@@ -4,7 +4,7 @@ import { authors, categories, type Post } from "@/lib/db";
 const input = "w-full rounded border border-neutral-300 px-3 py-2";
 const ERRORS: Record<string, string> = {
   required: "Title and content are required.",
-  size: "Image must be under 5 MB.",
+  size: "Image must be under 4 MB.",
   type: "Only JPG, PNG, GIF or WebP images are allowed.",
 };
 
@@ -18,7 +18,7 @@ export default async function PostForm({ post, selected = [], error }: { post?: 
         <label className="block">Excerpt<textarea name="excerpt" defaultValue={post?.excerpt} rows={2} className={input} /></label>
         <label className="block">Content (HTML)<textarea name="content" defaultValue={post?.content} required rows={16} className={`${input} font-mono text-sm`} /></label>
         <div>
-          <label className="block">Featured image (JPG, PNG, GIF or WebP, up to 5 MB)
+          <label className="block">Featured image (JPG, PNG, GIF or WebP, up to 4 MB)
             <input type="file" name="image" accept="image/jpeg,image/png,image/gif,image/webp" className="mt-1 block text-sm" />
           </label>
           {post?.image && (

@@ -1,12 +1,9 @@
 import type { NextConfig } from "next";
-import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
-  // Images are small and served straight from Cloudflare's asset storage
+  // Images are small and served as static files
   images: { unoptimized: true },
-  // admin image uploads go through a server action (5 MB image + form overhead)
-  experimental: { serverActions: { bodySizeLimit: "6mb" } },
   async headers() {
     return [
       {
@@ -19,6 +16,9 @@ const nextConfig: NextConfig = {
         ],
       },
       { source: "/admin/:path*", headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }] },
+      // imported images never change under the same filename
+      { source: "/uploads/:path*", headers: [{ key: "Cache-Control", value: "public, max-age=2592000" }] },
+      { source: "/logo.png", headers: [{ key: "Cache-Control", value: "public, max-age=2592000" }] },
     ];
   },
   turbopack: {
@@ -32,9 +32,6 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
-
-// lets `next dev` use the D1 binding from wrangler.jsonc
-initOpenNextCloudflareForDev();
 
 // `next dev` only: load the local admin password (node --env-file breaks Next's child process on Node 24)
 if (process.env.NODE_ENV === "development") {

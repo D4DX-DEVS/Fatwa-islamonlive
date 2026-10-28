@@ -1,9 +1,61 @@
-import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { updateTag } from "next/cache";
 
-// Cloudflare D1 (SQLite). The binding is declared in wrangler.jsonc.
-const d1 = () => getCloudflareContext().env.DB;
-const rows = async <T>(sql: string, ...args: unknown[]) => (await d1().prepare(sql).bind(...args).all<T>()).results;
-const row = <T>(sql: string, ...args: unknown[]) => d1().prepare(sql).bind(...args).first<T>();
+// On Vercel the data lives in Cloudflare D1, reached over its REST API. In dev (no VERCEL, unless REMOTE_DB=1)
+// a private SQLite copy of data/fatwa.db is used, so local tests never touch live data.
+export const remote = !!process.env.VERCEL || process.env.REMOTE_DB === "1";
+
+type Stmt = { sql: string; params: unknown[] };
+type Result = { results: Record<string, unknown>[]; meta: { last_row_id: number } };
+
+let sqlite: import("node:sqlite").DatabaseSync | undefined;
+async function local(stmts: Stmt[]): Promise<Result[]> {
+  if (!sqlite) {
+    const { DatabaseSync } = await import("node:sqlite");
+    const { copyFileSync, existsSync } = await import("node:fs");
+    if (!existsSync(".dev.db")) copyFileSync("data/fatwa.db", ".dev.db");
+    sqlite = new DatabaseSync(".dev.db");
+  }
+  const db = sqlite;
+  const exec = (s: Stmt): Result => {
+    const q = db.prepare(s.sql);
+    if (/^\s*select/i.test(s.sql)) return { results: q.all(...(s.params as never[])) as Record<string, unknown>[], meta: { last_row_id: 0 } };
+    return { results: [], meta: { last_row_id: Number(q.run(...(s.params as never[])).lastInsertRowid) } };
+  };
+  if (stmts.length === 1) return [exec(stmts[0])];
+  db.exec("BEGIN");
+  try {
+    const out = stmts.map(exec);
+    db.exec("COMMIT");
+    return out;
+  } catch (e) {
+    db.exec("ROLLBACK");
+    throw e;
+  }
+}
+
+// Reads are cached by Next (tag "db") until an admin write expires the tag; a batch runs as one transaction.
+async function run(stmts: Stmt[], write = false): Promise<Result[]> {
+  if (!remote) return local(stmts);
+  const { CLOUDFLARE_ACCOUNT_ID: account, D1_DATABASE_ID: database, CLOUDFLARE_API_TOKEN: token } = process.env;
+  const res = await fetch(`https://api.cloudflare.com/client/v4/accounts/${account}/d1/database/${database}/query`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify(stmts.length === 1 ? stmts[0] : { batch: stmts }),
+    ...(write ? { cache: "no-store" } : { next: { revalidate: 3600, tags: ["db"] } }),
+  });
+  const json = await res.json();
+  if (!json.success) throw new Error(`D1 query failed: ${JSON.stringify(json.errors)}`);
+  return json.result;
+}
+const write = async (stmts: Stmt[]) => {
+  const out = await run(stmts, true);
+  updateTag("db"); // only called from server actions, so the next read is fresh
+  return out;
+};
+
+const rows = async <T>(sql: string, ...params: unknown[]) => (await run([{ sql, params }]))[0].results as T[];
+const row = async <T>(sql: string, ...params: unknown[]) => (await rows<T>(sql, ...params))[0] ?? null;
+const stmt = (sql: string, ...params: unknown[]): Stmt => ({ sql, params });
 
 export type Post = { id: number; title: string; excerpt: string; content: string; date: string; author_id: number; author: string | null; image: string | null };
 export type Category = { id: number; name: string; parent: number };
@@ -54,16 +106,15 @@ export const byAuthor = (id: number) => rows<PostCard>(`${LIST} WHERE p.author_i
 // image: undefined = keep the current one, null = remove it, string = new image URL
 export type PostInput = { title: string; excerpt: string; content: string; author_id: number; categoryIds: number[]; image?: string | null };
 const categoryStatements = (id: number, cats: number[]) => [
-  d1().prepare("DELETE FROM post_categories WHERE post_id = ?").bind(id),
-  ...cats.map((c) => d1().prepare("INSERT OR IGNORE INTO post_categories VALUES(?,?)").bind(id, c)),
+  stmt("DELETE FROM post_categories WHERE post_id = ?", id),
+  ...cats.map((c) => stmt("INSERT OR IGNORE INTO post_categories VALUES(?,?)", id, c)),
 ];
 export const createPost = async (p: PostInput) => {
-  const { meta } = await d1()
-    .prepare("INSERT INTO posts(slug, title, excerpt, content, date, author_id, image) VALUES('', ?, ?, ?, ?, ?, ?)")
-    .bind(p.title, p.excerpt, p.content, new Date().toISOString().slice(0, 19), p.author_id, p.image ?? null)
-    .run();
+  const [{ meta }] = await write([
+    stmt("INSERT INTO posts(slug, title, excerpt, content, date, author_id, image) VALUES('', ?, ?, ?, ?, ?, ?)", p.title, p.excerpt, p.content, new Date().toISOString().slice(0, 19), p.author_id, p.image ?? null),
+  ]);
   const id = meta.last_row_id;
-  await d1().batch(categoryStatements(id, p.categoryIds));
+  await write(categoryStatements(id, p.categoryIds));
   return id;
 };
 export const updatePost = (id: number, p: PostInput) => {
@@ -73,16 +124,13 @@ export const updatePost = (id: number, p: PostInput) => {
     sets.push("image = ?");
     args.push(p.image);
   }
-  return d1().batch([
-    d1().prepare(`UPDATE posts SET ${sets.join(", ")} WHERE id = ?`).bind(...args, id),
-    ...categoryStatements(id, p.categoryIds),
-  ]);
+  return write([stmt(`UPDATE posts SET ${sets.join(", ")} WHERE id = ?`, ...args, id), ...categoryStatements(id, p.categoryIds)]);
 };
 export const deletePost = (id: number) =>
-  d1().batch([
-    d1().prepare("DELETE FROM post_categories WHERE post_id = ?").bind(id),
-    d1().prepare("DELETE FROM post_tags WHERE post_id = ?").bind(id),
-    d1().prepare("DELETE FROM posts WHERE id = ?").bind(id),
+  write([
+    stmt("DELETE FROM post_categories WHERE post_id = ?", id),
+    stmt("DELETE FROM post_tags WHERE post_id = ?", id),
+    stmt("DELETE FROM posts WHERE id = ?", id),
   ]);
 
 export const search = (q: string) => {

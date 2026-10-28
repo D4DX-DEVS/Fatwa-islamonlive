@@ -7,9 +7,6 @@ import { categories, latest } from "@/lib/db";
 import { FOOTER_LINKS } from "@/lib/site";
 import "./globals.css";
 
-// Every page reads D1 per request (no build-time database, admin edits show instantly)
-export const dynamic = "force-dynamic";
-
 const font = Noto_Sans_Malayalam({ subsets: ["malayalam", "latin"], display: "swap" });
 
 export const metadata: Metadata = {

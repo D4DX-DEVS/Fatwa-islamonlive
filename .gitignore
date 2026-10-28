@@ -40,8 +40,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# cloudflare
-.open-next
+# local dev: private database copy, uploaded images, admin password
+.dev.db
+.dev-uploads
 .wrangler
 .dev.vars
-.cloudflare.env
