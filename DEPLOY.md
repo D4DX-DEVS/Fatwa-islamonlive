@@ -71,6 +71,12 @@ bytes are checked (not just its name) and SVG is refused. It is served from `/me
 one-year cache. Replacing or removing an image, or deleting the post, deletes the file from R2.
 Images from the old WordPress import are untouched.
 
+## Search engines see only the real domain
+
+Any address other than `SITE_URL` that serves the Worker (the workers.dev address, a staging name) answers `robots.txt` with
+"disallow all" and marks pages `noindex` (`worker.ts`). The domain forwarder sends `x-forwarded-host`, which is how the Worker
+recognises real-domain traffic, so keep that line in `forwarder/worker.js`. See `docs/SEO.md` for the SEO audit.
+
 ## Custom domain
 
 A Worker can only take a custom domain whose DNS zone is in the **same Cloudflare account**. `islamonlive.in`

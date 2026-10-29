@@ -2,15 +2,17 @@ import Link from "@/components/Link";
 import { permanentRedirect } from "next/navigation";
 import Thumb from "@/components/Thumb";
 import { categories, inEach, latest, type PostCard } from "@/lib/db";
+import JsonLd from "@/components/JsonLd";
+import { ORGANIZATION, WEBSITE, pageMeta } from "@/lib/seo";
 import { FOOTER_LINKS, SECTIONS, formatDate, type Tone } from "@/lib/site";
 
 // Tailwind needs whole class names, so each theme lists its classes in full
 type Theme = { box: string; title: string; muted: string; chip: string; pill: string; rule: string; num: string };
 const THEMES: Record<Tone, Theme> = {
-  paper: { box: "bg-paper text-ink border-gold/35", title: "text-deep", muted: "text-ink/55", chip: "bg-deep text-champagne", pill: "bg-sand text-deep hover:bg-deep hover:text-champagne", rule: "border-gold/30", num: "text-gold" },
-  sand: { box: "bg-sand text-ink border-gold/50", title: "text-deep", muted: "text-ink/55", chip: "bg-ink text-champagne", pill: "bg-paper/80 text-deep hover:bg-deep hover:text-champagne", rule: "border-gold/40", num: "text-jade" },
-  deep: { box: "geo bg-deep text-ivory border-gold/40", title: "text-ivory", muted: "text-ivory/55", chip: "bg-gold text-ink", pill: "bg-white/10 text-champagne hover:bg-gold hover:text-ink", rule: "border-white/15", num: "text-gold" },
-  dark: { box: "bg-ink text-ivory border-gold/40", title: "text-ivory", muted: "text-ivory/60", chip: "bg-gold text-ink", pill: "bg-white/15 text-ivory hover:bg-gold hover:text-ink", rule: "border-white/15", num: "text-gold" },
+  paper: { box: "bg-paper text-ink border-gold/35", title: "text-deep", muted: "text-ink/70", chip: "bg-deep text-champagne", pill: "bg-sand text-deep hover:bg-deep hover:text-champagne", rule: "border-gold/30", num: "text-goldtext" },
+  sand: { box: "bg-sand text-ink border-gold/50", title: "text-deep", muted: "text-ink/70", chip: "bg-ink text-champagne", pill: "bg-paper/80 text-deep hover:bg-deep hover:text-champagne", rule: "border-gold/40", num: "text-jade" },
+  deep: { box: "geo bg-deep text-ivory border-gold/40", title: "text-ivory", muted: "text-ivory/65", chip: "bg-gold text-ink", pill: "bg-white/10 text-champagne hover:bg-gold hover:text-ink", rule: "border-white/15", num: "text-gold" },
+  dark: { box: "bg-ink text-ivory border-gold/40", title: "text-ivory", muted: "text-ivory/70", chip: "bg-gold text-ink", pill: "bg-white/15 text-ivory hover:bg-gold hover:text-ink", rule: "border-white/15", num: "text-gold" },
 };
 const SPAN = { 1: "", 2: "md:col-span-2", 3: "md:col-span-2 lg:col-span-3" } as const;
 const SUPPORT = FOOTER_LINKS[0].href;
@@ -147,6 +149,12 @@ function Block({ title, tabs, tone, layout = "card", span = 1, names, items, n }
   );
 }
 
+export const metadata = pageMeta({
+  title: { absolute: "Fatwa Islamonlive | Malayalam fatwa portal" },
+  description: "Fatwa Islamonlive is a Malayalam fatwa portal: questions and answers on faith, worship, family, finance and daily life, published by Islamonlive.",
+  path: "/",
+});
+
 // Old WordPress plain-permalink URLs (/?p=ID etc.) -> new routes
 const LEGACY = { p: "post", cat: "category", author: "author" } as const;
 
@@ -174,6 +182,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
   }
   return (
     <>
+      <JsonLd data={{ "@context": "https://schema.org", "@graph": [ORGANIZATION, WEBSITE] }} />
       <h1 className="sr-only">Fatwa Islamonlive</h1>
       <Hero posts={hero} />
       <div className="mt-12 grid grid-flow-dense grid-cols-1 items-stretch gap-6 md:grid-cols-2 lg:grid-cols-3">{blocks}</div>

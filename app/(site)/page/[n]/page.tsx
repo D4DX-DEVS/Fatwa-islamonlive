@@ -4,12 +4,20 @@ import BlockTitle from "@/components/BlockTitle";
 import Pager from "@/components/Pager";
 import PostList from "@/components/PostList";
 import { PAGE_SIZE, countAll, latest } from "@/lib/db";
+import { pageMeta } from "@/lib/seo";
 
 export async function generateMetadata({ params }: PageProps<"/page/[n]">): Promise<Metadata> {
-  return { title: `Page ${(await params).n}` };
+  const n = Number((await params).n);
+  if (!Number.isInteger(n) || n < 1) return {};
+  const last = Math.ceil((await countAll()) / PAGE_SIZE);
+  return pageMeta({
+    title: `All fatwas – page ${n} of ${last}`,
+    description: `Every fatwa on Fatwa Islamonlive, newest first. Page ${n} of ${last}.`,
+    path: `/page/${n}`,
+  });
 }
 
-const href = (n: number) => (n === 1 ? "/" : `/page/${n}`);
+const href = (n: number) => `/page/${n}`;
 
 export default async function Page({ params }: PageProps<"/page/[n]">) {
   const n = Number((await params).n);

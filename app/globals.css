@@ -10,6 +10,7 @@
   --color-ivory: #fbf6ea;
   --color-paper: #fffdf7;
   --color-sand: #f1e8d2;
+  --color-goldtext: #7d5a0e; /* gold dark enough to read as text on ivory and sand (5:1) */
   /* older class names (admin and a few components) keep working */
   --color-brand: #0f5a44;
   --color-brand-dark: #082f24;
@@ -25,7 +26,9 @@
 html { scroll-behavior: smooth; }
 body { background: var(--color-ivory); color: var(--color-ink); line-height: 1.7; -webkit-font-smoothing: antialiased; }
 ::selection { background: var(--color-gold); color: var(--color-ink); }
-:focus-visible { outline: 2px solid var(--color-gold); outline-offset: 3px; border-radius: 4px; }
+:focus-visible { outline: 3px solid var(--color-brand); outline-offset: 3px; border-radius: 4px; }
+/* on the dark emerald and ink areas the focus ring is gold */
+nav :focus-visible, footer :focus-visible, [class*="bg-deep"] :focus-visible, [class*="bg-ink"] :focus-visible, .bg-deep:focus-visible, .bg-ink:focus-visible { outline-color: var(--color-gold); }
 
 /* eight-point star lattice, drawn in gold */
 .geo {

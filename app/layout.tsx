@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 
 // bold display and interface type (Malayalam + Latin) and a serif for long reading
 const sans = Anek_Malayalam({ subsets: ["malayalam", "latin"], variable: "--font-anek", display: "swap" });
-const serif = Noto_Serif_Malayalam({ subsets: ["malayalam", "latin"], variable: "--font-notoserif", display: "swap" });
+const serif = Noto_Serif_Malayalam({ subsets: ["malayalam", "latin"], variable: "--font-notoserif", display: "swap", preload: false });
 
 export const metadata: Metadata = {
   // links and share images always point at the real domain, even when the page is opened on the *.vercel.app address

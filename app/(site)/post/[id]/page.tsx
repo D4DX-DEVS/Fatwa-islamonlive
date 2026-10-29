@@ -3,7 +3,9 @@ import Link from "@/components/Link";
 import { notFound } from "next/navigation";
 import PostList from "@/components/PostList";
 import Thumb from "@/components/Thumb";
+import JsonLd from "@/components/JsonLd";
 import { postBundle } from "@/lib/db";
+import { ORGANIZATION, SITE, ORG_ID, isHouseAuthor, pageMeta, plain } from "@/lib/seo";
 import { formatDate } from "@/lib/site";
 
 // the page and its metadata share one cached database call
@@ -14,9 +16,16 @@ const load = async (params: PageProps<"/post/[id]">["params"]) => {
 
 export async function generateMetadata({ params }: PageProps<"/post/[id]">): Promise<Metadata> {
   const p = (await load(params))?.post;
-  return p
-    ? { title: p.title, description: p.excerpt.slice(0, 160), openGraph: { title: p.title, description: p.excerpt.slice(0, 160), type: "article", ...(p.image && { images: [p.image] }) } }
-    : {};
+  if (!p) return {};
+  return pageMeta({
+    title: p.title,
+    description: plain(p.excerpt || p.content),
+    path: `/post/${p.id}`,
+    image: p.image,
+    type: "article",
+    published: p.date,
+    author: isHouseAuthor(p.author) ? null : p.author,
+  });
 }
 
 export default async function Post({ params }: PageProps<"/post/[id]">) {
@@ -30,24 +39,54 @@ export default async function Post({ params }: PageProps<"/post/[id]">) {
     { label: "Facebook", href: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}` },
     { label: "X", href: `https://twitter.com/intent/tweet?text=${encodeURIComponent(p.title)}&url=${encodeURIComponent(url)}` },
   ];
+  const pageUrl = `${SITE}/post/${p.id}`;
+  const ld = {
+    "@context": "https://schema.org",
+    "@graph": [
+      ORGANIZATION,
+      {
+        "@type": "Article",
+        "@id": `${pageUrl}#article`,
+        headline: p.title,
+        description: plain(p.excerpt || p.content),
+        inLanguage: "ml",
+        datePublished: p.date,
+        ...(p.image && { image: [`${SITE}${p.image}`] }),
+        author: isHouseAuthor(p.author) ? { "@id": ORG_ID } : { "@type": "Person", name: p.author, url: `${SITE}/author/${p.author_id}` },
+        publisher: { "@id": ORG_ID },
+        mainEntityOfPage: { "@type": "WebPage", "@id": pageUrl },
+        ...(cats[0] && { articleSection: cats[0].name }),
+        ...(tg.length > 0 && { keywords: tg.map((t) => t.name).join(", ") }),
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "ഹോം", item: `${SITE}/` },
+          ...(cats[0] ? [{ "@type": "ListItem", position: 2, name: cats[0].name, item: `${SITE}/category/${cats[0].id}` }] : []),
+          { "@type": "ListItem", position: cats[0] ? 3 : 2, name: p.title, item: pageUrl },
+        ],
+      },
+    ],
+  };
   const chip = "rounded-full px-4 py-1.5 text-sm font-bold transition-all duration-300";
 
   return (
     <div className="mx-auto max-w-3xl">
+      <JsonLd data={ld} />
       <div aria-hidden className="progress" />
-      <nav aria-label="Breadcrumb" className="rise mb-6 flex flex-wrap items-center gap-x-3 text-sm font-semibold text-ink/55">
+      <nav aria-label="Breadcrumb" className="rise mb-6 flex flex-wrap items-center gap-x-3 text-sm font-semibold text-ink/70">
         <Link href="/" className="transition-colors hover:text-deep">ഹോം</Link>
         {cats[0] && <><span aria-hidden className="text-gold">◆</span><Link href={`/category/${cats[0].id}`} className="transition-colors hover:text-deep">{cats[0].name}</Link></>}
       </nav>
 
       <article>
         <header>
-          {cats[0] && <p className="rise text-sm font-extrabold text-gold [--i:1]">{cats[0].name}</p>}
+          {cats[0] && <p className="rise text-sm font-extrabold text-goldtext [--i:1]">{cats[0].name}</p>}
           <h1 className="rise mt-3 text-[2rem] font-extrabold leading-[1.28] text-deep [--i:2] sm:text-[3.4rem] sm:leading-[1.2]">{p.title}</h1>
           <p className="rise mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-semibold [--i:3]">
             {p.author && <Link href={`/author/${p.author_id}`} className="rounded-full bg-deep px-4 py-1.5 font-bold text-champagne transition-colors hover:bg-gold hover:text-ink">{p.author}</Link>}
             <span aria-hidden className="h-px w-8 bg-gold" />
-            <time dateTime={p.date.slice(0, 10)} className="text-ink/60">{formatDate(p.date)}</time>
+            <time dateTime={p.date.slice(0, 10)} className="text-ink/70">{formatDate(p.date)}</time>
           </p>
         </header>
 
@@ -62,7 +101,7 @@ export default async function Post({ params }: PageProps<"/post/[id]">) {
             </p>
           )}
           <div className="mt-6 flex flex-wrap items-center gap-2.5 text-sm">
-            <span className="mr-1 text-[11px] font-extrabold uppercase tracking-[0.25em] text-gold">Share</span>
+            <span className="mr-1 text-[11px] font-extrabold uppercase tracking-[0.25em] text-goldtext">Share</span>
             {share.map((s) => <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" className={`${chip} sheen bg-ink text-champagne hover:-translate-y-0.5 hover:bg-deep`}>{s.label}</a>)}
           </div>
         </div>

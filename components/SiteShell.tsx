@@ -66,7 +66,7 @@ export default async function SiteShell({ children }: { children: React.ReactNod
                 <ul className="space-y-2.5 text-sm font-semibold">
                   {FOOTER_LINKS.map((l) => <li key={l.href}><a href={l.href} className="transition-colors hover:text-gold"><span className="sweep">{l.label}</span></a></li>)}
                   <li><Link href="/feed.xml" className="transition-colors hover:text-gold"><span className="sweep">RSS</span></Link></li>
-                  <li><Link href="/admin" className="text-ivory/40 transition-colors hover:text-gold">Admin</Link></li>
+                  <li><Link href="/admin" className="text-ivory/65 transition-colors hover:text-gold">Admin</Link></li>
                 </ul>
               </nav>
             </div>
@@ -79,7 +79,7 @@ export default async function SiteShell({ children }: { children: React.ReactNod
               </p>
             </div>
           </div>
-          <p className="mt-14 border-t border-gold/25 pt-6 text-center text-xs tracking-wide text-ivory/50">© Copyright islamonlive.in, All Rights Reserved</p>
+          <p className="mt-14 border-t border-gold/25 pt-6 text-center text-xs tracking-wide text-ivory/65">© Copyright islamonlive.in, All Rights Reserved</p>
         </div>
       </footer>
     </>

@@ -8,6 +8,15 @@ const nextConfig: NextConfig = {
   experimental: {
     serverActions: { bodySizeLimit: "6mb", allowedOrigins: [new URL(process.env.SITE_URL ?? "http://localhost:3000").host] },
   },
+  // addresses the old WordPress site served that have a direct equivalent here
+  async redirects() {
+    return [
+      { source: "/feed", destination: "/feed.xml", permanent: true },
+      { source: "/wp-sitemap.xml", destination: "/sitemap.xml", permanent: true },
+      { source: "/sitemap_index.xml", destination: "/sitemap.xml", permanent: true },
+      { source: "/wp-content/uploads/:path*", destination: "/uploads/:path*", permanent: true },
+    ];
+  },
   async headers() {
     return [
       {

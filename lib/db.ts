@@ -75,11 +75,14 @@ export const PAGE_SIZE = 20;
 
 // cache(): the layout and the page both ask for these in one request, so they share one query
 export const latest = cache((offset: number, limit = PAGE_SIZE) => rows<PostCard>(cards(""), limit, offset));
-export const countAll = async () => (await row<{ n: number }>("SELECT COUNT(*) n FROM posts"))!.n;
+export const countAll = cache(async () => (await row<{ n: number }>("SELECT COUNT(*) n FROM posts"))!.n);
 
 const ids = async (table: string) => (await rows<{ id: number }>(`SELECT id FROM ${table}`)).map((r) => String(r.id));
 export const postIds = () => ids("posts");
-export const categoryIds = () => ids("categories");
+// categories that have posts (an empty category page is thin content and stays out of the sitemap)
+export const categoryIds = async () => (await rows<{ id: number }>("SELECT DISTINCT category_id AS id FROM post_categories")).map((r) => String(r.id));
+// authors that have posts (an author page with none would be empty)
+export const authorIds = async () => (await rows<{ id: number }>("SELECT DISTINCT author_id AS id FROM posts WHERE author_id IS NOT NULL")).map((r) => String(r.id));
 
 // admin edit form
 export const post = (id: number) =>
@@ -189,10 +192,10 @@ export const search = (q: string) => {
   return rows<PostCard>(cards("WHERE p.title LIKE ? ESCAPE '\\' OR p.content LIKE ? ESCAPE '\\'"), like, like, 500, 0);
 };
 
-// slugs are stored percent-encoded and lowercase (as WordPress emitted them); the URL may arrive decoded or encoded
-export const postIdBySlug = async (slug: string) => {
+// Old WordPress URLs carry slugs. They are stored percent-encoded and lowercase (as WordPress emitted them); the URL may arrive decoded or encoded.
+export const idBySlug = async (table: "posts" | "categories" | "tags" | "authors", slug: string) => {
   let decoded = slug;
   try { decoded = decodeURIComponent(slug); } catch { /* keep as is */ }
-  const r = await row<{ id: number }>("SELECT id FROM posts WHERE slug IN (?, ?) LIMIT 1", slug.toLowerCase(), encodeURIComponent(decoded).toLowerCase());
+  const r = await row<{ id: number }>(`SELECT id FROM ${table} WHERE slug IN (?, ?) LIMIT 1`, slug.toLowerCase(), encodeURIComponent(decoded).toLowerCase());
   return r?.id ?? null;
 };

@@ -20,7 +20,7 @@ export default function Pager({ page, last, href }: { page: number; last: number
     <nav aria-label="Pages" className="mt-12 flex flex-wrap items-center justify-center gap-2.5">
       {page > 1 && <Link href={href(page - 1)} className={idle}>← Newer</Link>}
       {windowed(page, last).map((x) =>
-        typeof x === "string" ? <span key={x} className="px-1 text-gold">…</span>
+        typeof x === "string" ? <span key={x} className="px-1 text-goldtext">…</span>
         : x === page ? <span key={x} aria-current="page" className={`${cell} border-deep bg-deep text-gold shadow-lg shadow-deep/30`}>{x}</span>
         : <Link key={x} href={href(x)} className={idle}>{x}</Link>,
       )}

@@ -1,4 +1,8 @@
+import type { Metadata } from "next";
 import Link from "@/components/Link";
+
+// a missing page has no canonical address (Next adds noindex to it already)
+export const metadata: Metadata = { title: "Page not found", alternates: { canonical: null } };
 
 // Rendered inside the surrounding layout (the public pages and the admin both have their own shell)
 export default function NotFound() {

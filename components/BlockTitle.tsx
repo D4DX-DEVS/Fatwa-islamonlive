@@ -4,7 +4,7 @@ import Link from "@/components/Link";
 export default function BlockTitle({ children, href, count, eyebrow = "Fatwa Islamonlive" }: { children: React.ReactNode; href?: string; count?: number; eyebrow?: string }) {
   return (
     <div className="mb-8">
-      <p className="rise text-[11px] font-extrabold uppercase tracking-[0.3em] text-gold">{eyebrow}</p>
+      <p className="rise text-[11px] font-extrabold uppercase tracking-[0.3em] text-goldtext">{eyebrow}</p>
       <h1 className="rise mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 text-4xl font-extrabold leading-tight text-deep [--i:1] sm:text-6xl sm:leading-tight">
         {href ? <Link href={href}>{children}</Link> : children}
         {count !== undefined && (

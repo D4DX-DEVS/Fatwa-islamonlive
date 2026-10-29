@@ -7,7 +7,9 @@
 // After a change, pages render again when someone asks for them; a Cron Trigger also renders a few pages
 // nobody has asked for yet on every run, so almost every page is stored before it is ever visited.
 // If D1 fails while a page is rendered, the old stored copy is served instead of an error.
-// @ts-ignore: produced by `opennextjs-cloudflare build`
+// the file only exists after `opennextjs-cloudflare build`, so the type checker cannot always resolve it
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import openNext from "./.open-next/worker.js";
 
 const MAX_AGE = 7 * 86_400_000; // ms a stored page is trusted even without a change
@@ -116,17 +118,34 @@ async function warm(env: Env, ctx: ExecutionContext) {
   }
 }
 
-export default {
+// Search engines must only index the real domain. Every other address that serves this Worker (workers.dev, a staging
+// name) answers robots.txt with "disallow all" and marks pages noindex. The domain forwarder sets x-forwarded-host.
+function offDomain(request: Request, env: Env, url: URL) {
+  return (request.headers.get("x-forwarded-host") ?? url.host) !== new URL(env.SITE_URL).host;
+}
+
+async function route(request: Request, env: Env, ctx: ExecutionContext, url: URL): Promise<Response> {
+  // only plain page loads are stored: not the admin, not form posts
+  if (request.method !== "GET" || url.pathname.startsWith("/admin") || request.headers.has("next-action")) {
+    return openNext.fetch(request, env, ctx);
+  }
+  return handle(request, env, ctx);
+}
+
+const worker = {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
-    // only plain page loads: not the admin, not form posts
-    if (request.method !== "GET" || url.pathname.startsWith("/admin") || request.headers.has("next-action")) {
-      return openNext.fetch(request, env, ctx);
-    }
-    return handle(request, env, ctx);
+    if (!offDomain(request, env, url)) return route(request, env, ctx, url);
+    if (url.pathname === "/robots.txt") return new Response("User-agent: *\nDisallow: /\n", { headers: { "content-type": "text/plain; charset=utf-8" } });
+    const original = await route(request, env, ctx, url);
+    const res = new Response(original.body, original); // copy, so the headers can be changed
+    res.headers.set("x-robots-tag", "noindex, nofollow");
+    return res;
   },
 
   async scheduled(_event: unknown, env: Env, ctx: ExecutionContext) {
     ctx.waitUntil(warm(env, ctx).catch((e) => console.error("warm failed", e)));
   },
 };
+
+export default worker;
