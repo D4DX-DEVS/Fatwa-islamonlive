@@ -4,8 +4,10 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   // Images are small and served as static files
   images: { unoptimized: true },
-  // admin image uploads go through a server action (4 MB image + form overhead; the default limit is 1 MB)
-  experimental: { serverActions: { bodySizeLimit: "6mb" } },
+  // admin forms are server actions (1 MB default body limit is too small for a 4 MB image); behind the domain forwarder the browser origin is the real domain
+  experimental: {
+    serverActions: { bodySizeLimit: "6mb", allowedOrigins: [new URL(process.env.SITE_URL ?? "http://localhost:3000").host] },
+  },
   async headers() {
     return [
       {
