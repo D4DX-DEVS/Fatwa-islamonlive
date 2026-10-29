@@ -13,10 +13,11 @@ export default async function Tag({ params }: PageProps<"/tag/[id]">) {
   const id = Number((await params).id);
   const t = await tag(id);
   if (!t) notFound();
+  const posts = await byTag(id);
   return (
     <>
-      <BlockTitle>#{t.name}</BlockTitle>
-      <PostList posts={await byTag(id)} />
+      <BlockTitle count={posts.length}>#{t.name}</BlockTitle>
+      <PostList posts={posts} />
     </>
   );
 }

@@ -12,10 +12,11 @@ export default async function Author({ params }: PageProps<"/author/[id]">) {
   const id = Number((await params).id);
   const a = await author(id);
   if (!a) notFound();
+  const posts = await byAuthor(id);
   return (
     <>
-      <BlockTitle>{a.name}</BlockTitle>
-      <PostList posts={await byAuthor(id)} />
+      <BlockTitle count={posts.length}>{a.name}</BlockTitle>
+      <PostList posts={posts} />
     </>
   );
 }

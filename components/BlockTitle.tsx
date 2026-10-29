@@ -1,7 +1,12 @@
 import Link from "next/link";
 
-// Section heading in the original theme's style: coloured label on a thin rule
-export default function BlockTitle({ children, href }: { children: React.ReactNode; href?: string }) {
-  const label = <span className="inline-block bg-[#2d7c26] px-3 py-1 text-sm font-bold uppercase text-white">{children}</span>;
-  return <h2 className="mb-3 border-b-2 border-[#2d7c26]">{href ? <Link href={href}>{label}</Link> : label}</h2>;
+// Page heading: green accent bar, title, optional count pill
+export default function BlockTitle({ children, href, count }: { children: React.ReactNode; href?: string; count?: number }) {
+  return (
+    <h1 className="mb-5 flex flex-wrap items-center gap-3 text-2xl font-bold leading-snug sm:text-3xl">
+      <span aria-hidden className="h-7 w-1.5 shrink-0 rounded-full bg-brand" />
+      {href ? <Link href={href}>{children}</Link> : children}
+      {count !== undefined && <span className="rounded-full bg-brand-soft px-3 py-0.5 text-sm font-semibold text-brand">{count} posts</span>}
+    </h1>
+  );
 }

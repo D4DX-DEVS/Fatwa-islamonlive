@@ -12,10 +12,11 @@ export default async function Category({ params }: PageProps<"/category/[id]">) 
   const id = Number((await params).id);
   const c = await category(id);
   if (!c) notFound();
+  const posts = await byCategory(id);
   return (
     <>
-      <BlockTitle>{c.name}</BlockTitle>
-      <PostList posts={await byCategory(id)} />
+      <BlockTitle count={posts.length}>{c.name}</BlockTitle>
+      <PostList posts={posts} />
     </>
   );
 }

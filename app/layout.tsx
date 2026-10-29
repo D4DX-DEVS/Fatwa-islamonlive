@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="ml">
-      <body className={`${font.className} min-h-screen bg-neutral-50 text-neutral-900`}>{children}</body>
+      <body className={`${font.className} min-h-screen bg-[#f4f6f3] text-ink`}>{children}</body>
     </html>
   );
 }
