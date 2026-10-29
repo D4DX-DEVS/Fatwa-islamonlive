@@ -147,7 +147,7 @@ export const deletePost = (id: number) =>
 
 export const search = (q: string) => {
   const like = `%${q.replace(/[%_\\]/g, "\\$&")}%`;
-  return rows<PostCard>(`${LIST} WHERE p.title LIKE ? ESCAPE '\\' OR p.content LIKE ? ESCAPE '\\' ORDER BY p.date DESC LIMIT 50`, like, like);
+  return rows<PostCard>(`${LIST} WHERE p.title LIKE ? ESCAPE '\\' OR p.content LIKE ? ESCAPE '\\' ORDER BY p.date DESC LIMIT 500`, like, like);
 };
 
 // slugs are stored percent-encoded and lowercase (as WordPress emitted them); the URL may arrive decoded or encoded
