@@ -2,7 +2,7 @@
 
 The site runs as a Cloudflare Worker (via OpenNext). Posts live in a D1 database, images uploaded
 in the admin live in an R2 bucket, and the original WordPress images are static assets of the Worker.
-Every page renders on request, so admin edits show up immediately.
+Public pages are rendered from D1 and kept in an edge cache (see "Page cache"); the admin is never cached.
 
 Live address: `https://fatwa.d4dx-fatwa.workers.dev` (account workers.dev subdomain `d4dx-fatwa`).
 
@@ -43,6 +43,19 @@ npm run cf -- secret put ADMIN_PASSWORD
 
 Only if you ever need to reload the database from scratch: `npm run db:seed:remote`
 (**drops and recreates the tables, erasing admin edits and uploaded-image links**).
+
+## Page cache (stays inside the free plan)
+
+D1's free tier allows 5M row reads a day and an uncached page costs from a few hundred to a few thousand, so
+`worker.ts` (the Worker's entry point, wrapping the OpenNext app) keeps public pages in the edge cache:
+a stored copy is served for `FRESH` = 10 minutes, then served once more instantly while a new copy renders in
+the background. Consequences:
+
+- Admin edits show on public pages within about 10 minutes (the admin pages themselves are always live).
+- Never cached: `/admin`, form posts, Next client-navigation requests, error pages, anything with a cookie.
+- If D1 ever fails (limit reached), pages already in the cache keep being served from it for up to 24 hours.
+- Change the window by editing `FRESH` in `worker.ts` and redeploying.
+- The cache is per Cloudflare location, so each location renders a page once per window.
 
 ## Admin images
 
