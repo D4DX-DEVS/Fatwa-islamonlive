@@ -15,6 +15,13 @@ async function local(stmts: Stmt[]): Promise<Result[]> {
     const { copyFileSync, existsSync } = await import("node:fs");
     if (!existsSync(".dev.db")) copyFileSync("data/fatwa.db", ".dev.db");
     sqlite = new DatabaseSync(".dev.db");
+    // the same indexes d1/seed.sql creates on D1, so dev query plans match production
+    for (const sql of [
+      "CREATE INDEX IF NOT EXISTS posts_date ON posts(date DESC)",
+      "CREATE INDEX IF NOT EXISTS pc_category ON post_categories(category_id)",
+      "CREATE INDEX IF NOT EXISTS pt_tag ON post_tags(tag_id)",
+      "CREATE INDEX IF NOT EXISTS posts_author ON posts(author_id, date DESC)",
+    ]) sqlite.exec(sql);
   }
   const db = sqlite;
   const exec = (s: Stmt): Result => {
@@ -81,8 +88,9 @@ export const categoryNames = async (postIds: number[]) => {
 };
 
 export const categories = cache(() =>
+  // n is 1 when the category has posts: an index probe per category instead of counting every link on every page view
   rows<Category & { n: number }>(
-    "SELECT c.id, c.name, c.parent, COUNT(pc.post_id) AS n FROM categories c LEFT JOIN post_categories pc ON pc.category_id = c.id GROUP BY c.id ORDER BY c.name",
+    "SELECT c.id, c.name, c.parent, EXISTS(SELECT 1 FROM post_categories pc WHERE pc.category_id = c.id) AS n FROM categories c ORDER BY c.name",
   ),
 );
 export const category = (id: number) => row<Category>("SELECT id, name, parent FROM categories WHERE id = ?", id);
