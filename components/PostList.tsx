@@ -13,7 +13,7 @@ export default function PostList({ posts }: { posts: PostCard[] }) {
           <div className="min-w-0 break-words">
             {/* the title link stretches over the whole card */}
             <Link href={`/post/${p.id}`} className="line-clamp-2 text-base font-semibold leading-snug after:absolute after:inset-0 group-hover:text-brand sm:text-lg">{p.title}</Link>
-            {p.excerpt && <p className="mt-1 hidden line-clamp-2 text-sm text-neutral-600 sm:block">{p.excerpt}</p>}
+            {p.excerpt && <p className="mt-1 line-clamp-2 text-sm text-neutral-600 max-sm:hidden">{p.excerpt}</p>}
             <p className="mt-2 text-xs text-neutral-500">
               {p.author ? `${p.author} · ` : ""}
               {formatDate(p.date)}

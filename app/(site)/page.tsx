@@ -166,6 +166,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
   }
   return (
     <>
+      <h1 className="sr-only">Fatwa Islamonlive</h1>
       <Hero posts={hero} />
       <div className="mt-8 grid grid-flow-dense grid-cols-1 items-stretch gap-5 md:grid-cols-2 lg:grid-cols-3">{blocks}</div>
       <p className="mt-10 text-center">
