@@ -83,8 +83,7 @@ function Row({ p, n }: { p: PostCard; n?: number }) {
   );
 }
 
-async function Block({ title, tabs, tone, layout = "card", span = 1, names }: (typeof SECTIONS)[number] & { names: Map<number, string> }) {
-  const items = await inCategories(tabs, 5);
+function Block({ title, tabs, tone, layout = "card", span = 1, names, items }: (typeof SECTIONS)[number] & { names: Map<number, string>; items: PostCard[] }) {
   // lead with a post that has a picture so the card never opens on a blank thumbnail
   const lead = items.find((p) => p.image) ?? items[0];
   if (!lead) return null;
@@ -118,13 +117,12 @@ async function Block({ title, tabs, tone, layout = "card", span = 1, names }: (t
     return (
       <section className={box}>
         {head}
-        <div className="grid flex-1 gap-5 sm:grid-cols-2">
-          <Link href={`/post/${lead.id}`} className="group relative block min-h-60 overflow-hidden rounded-xl">
-            <Thumb src={lead.image} className="absolute inset-0 h-full w-full transition-transform duration-500 group-hover:scale-105" />
-            <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-4 pt-14 text-lg font-bold leading-snug text-white">{lead.title}</span>
-          </Link>
-          <ul className="space-y-3 self-center">{rest.map((p, i) => <Row key={p.id} p={p} n={i + 1} />)}</ul>
-        </div>
+        {/* wide banner on top, numbered headlines in two columns underneath */}
+        <Link href={`/post/${lead.id}`} className={`group relative block aspect-video overflow-hidden rounded-xl ${span === 3 ? "sm:aspect-[3/1]" : "sm:aspect-[5/2]"}`}>
+          <Thumb src={lead.image} className="absolute inset-0 h-full w-full transition-transform duration-500 group-hover:scale-105" />
+          <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-4 pt-14 text-lg font-bold leading-snug text-white sm:text-xl">{lead.title}</span>
+        </Link>
+        <ul className="mt-5 grid gap-x-6 gap-y-3 sm:grid-cols-2">{rest.map((p, i) => <Row key={p.id} p={p} n={i + 1} />)}</ul>
       </section>
     );
   }
@@ -157,12 +155,19 @@ export default async function Home({ searchParams }: PageProps<"/">) {
   const recent = await latest(0);
   const hero = [...recent.filter((p) => p.image), ...recent.filter((p) => !p.image)].slice(0, 4);
   const names = new Map((await categories()).map((c) => [c.id, c.name]));
+
+  // a post shows once on the page: each card skips posts the hero or an earlier card already used
+  const used = new Set(hero.map((p) => p.id));
+  const blocks = [];
+  for (const s of SECTIONS) {
+    const items = (await inCategories(s.tabs, 7 + used.size)).filter((p) => !used.has(p.id)).slice(0, s.layout === "split" ? 7 : 5);
+    items.forEach((p) => used.add(p.id));
+    if (items.length) blocks.push(<Block key={s.title} {...s} names={names} items={items} />);
+  }
   return (
     <>
       <Hero posts={hero} />
-      <div className="mt-8 grid grid-flow-dense grid-cols-1 items-stretch gap-5 md:grid-cols-2 lg:grid-cols-3">
-        {SECTIONS.map((s) => <Block key={s.title} {...s} names={names} />)}
-      </div>
+      <div className="mt-8 grid grid-flow-dense grid-cols-1 items-stretch gap-5 md:grid-cols-2 lg:grid-cols-3">{blocks}</div>
       <p className="mt-10 text-center">
         <Link href="/page/1" className="inline-block rounded-full bg-brand px-6 py-2.5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-brand-dark">All posts →</Link>
       </p>
