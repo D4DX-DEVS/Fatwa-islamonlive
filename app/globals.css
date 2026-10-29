@@ -1,35 +1,117 @@
 @import "tailwindcss";
 
+/* Palette: deep emerald, antique gold, ivory paper. Bold Malayalam display type, a serif for reading. */
 @theme {
-  --color-brand: #2d7c26;
-  --color-brand-dark: #1f5c1a;
-  --color-brand-soft: #eef6ec;
-  --color-ink: #1c2321;
+  --color-ink: #07211a;
+  --color-deep: #0b3a2c;
+  --color-jade: #14705a;
+  --color-gold: #c9a24b;
+  --color-champagne: #ecdca6;
+  --color-ivory: #fbf6ea;
+  --color-paper: #fffdf7;
+  --color-sand: #f1e8d2;
+  /* older class names (admin and a few components) keep working */
+  --color-brand: #0f5a44;
+  --color-brand-dark: #082f24;
+  --color-brand-soft: #f1e8d2;
+}
+
+/* next/font sets these variables on <body>, so the theme must read them where they are used */
+@theme inline {
+  --font-sans: var(--font-anek), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-notoserif), ui-serif, Georgia, serif;
 }
 
 html { scroll-behavior: smooth; }
-body { background: #f4f6f3; color: var(--color-ink); line-height: 1.7; -webkit-font-smoothing: antialiased; }
-::selection { background: #cfe8ca; }
-:focus-visible { outline: 2px solid var(--color-brand); outline-offset: 2px; border-radius: 4px; }
+body { background: var(--color-ivory); color: var(--color-ink); line-height: 1.7; -webkit-font-smoothing: antialiased; }
+::selection { background: var(--color-gold); color: var(--color-ink); }
+:focus-visible { outline: 2px solid var(--color-gold); outline-offset: 3px; border-radius: 4px; }
+
+/* eight-point star lattice, drawn in gold */
+.geo {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Cg fill='none' stroke='%23c9a24b' stroke-opacity='.2' stroke-width='1'%3E%3Cpath d='M32 6l6.5 15.5L54 15l-6.5 15.5L63 32l-15.5 6.5L54 54l-15.5-6.5L32 63l-6.5-15.5L10 54l6.5-15.5L1 32l15.5-6.5L10 10l15.5 6.5z'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 64px 64px;
+}
+
+/* ---- motion ---- */
+@keyframes rise { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: none; } }
+@keyframes marquee { to { transform: translateX(-50%); } }
+@keyframes drift { from { transform: scale(1.03); } to { transform: scale(1.12) translate(-1.2%, -1%); } }
+@keyframes grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes pulse-ring { 0% { box-shadow: 0 0 0 0 rgb(201 162 75 / .55); } 100% { box-shadow: 0 0 0 10px rgb(201 162 75 / 0); } }
+
+/* entrance on load; --i staggers siblings */
+.rise { animation: rise .9s cubic-bezier(.2, .7, .2, 1) both; animation-delay: calc(var(--i, 0) * 110ms); }
+/* entrance as the element scrolls into view (browsers without scroll timelines play it on load) */
+.reveal { animation: rise .9s cubic-bezier(.2, .7, .2, 1) both; }
+@supports (animation-timeline: view()) {
+  .reveal { animation: rise linear both; animation-timeline: view(); animation-range: entry 0% entry 40%; }
+}
+.marquee { animation: marquee 55s linear infinite; }
+.marquee:hover { animation-play-state: paused; }
+.drift img { animation: drift 26s ease-in-out infinite alternate; }
+.zoom img { transition: transform 1.4s cubic-bezier(.2, .7, .2, 1); }
+.zoom:hover img { transform: scale(1.07); }
+.lift { transition: transform .5s cubic-bezier(.2, .7, .2, 1), box-shadow .5s; }
+.lift:hover { transform: translateY(-5px); box-shadow: 0 28px 50px -26px rgb(7 33 26 / .55); }
+.pulse { animation: pulse-ring 1.8s ease-out infinite; }
+
+/* gold underline that sweeps in under a link, line by line for wrapped text */
+.sweep {
+  background: linear-gradient(var(--color-gold), var(--color-gold)) no-repeat 0 100% / 0 2px;
+  transition: background-size .45s cubic-bezier(.2, .7, .2, 1);
+  box-decoration-break: clone; -webkit-box-decoration-break: clone;
+}
+a:hover > .sweep, .sweep:hover, .group:hover .sweep { background-size: 100% 2px; }
+
+/* light that crosses a button on hover */
+.sheen { position: relative; overflow: hidden; isolation: isolate; }
+.sheen::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(115deg, transparent 32%, rgb(255 255 255 / .45) 50%, transparent 68%);
+  transform: translateX(-130%); transition: transform .9s cubic-bezier(.2, .7, .2, 1);
+}
+.sheen:hover::after { transform: translateX(130%); }
+
+/* reading progress on article pages */
+.progress {
+  position: fixed; inset: 0 0 auto 0; height: 3px; z-index: 60; transform-origin: 0 50%;
+  background: linear-gradient(90deg, var(--color-gold), var(--color-champagne));
+  animation: grow linear both; animation-timeline: scroll(root);
+}
+@supports not (animation-timeline: scroll()) { .progress { display: none; } }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  *, *::before, *::after { transition: none !important; animation: none !important; }
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  .rise, .reveal { opacity: 1 !important; transform: none !important; }
 }
 
-/* Article body (HTML imported from WordPress) */
-.prose-content { font-size: 1.0625rem; line-height: 2; color: #26302d; overflow-wrap: anywhere; }
-.prose-content p, .prose-content ul, .prose-content ol { margin-bottom: 1.1rem; }
+/* ---- article body (HTML imported from WordPress) ---- */
+.prose-content { font-family: var(--font-notoserif), ui-serif, Georgia, serif; font-size: 1.1875rem; line-height: 2.05; color: #1c2b26; overflow-wrap: anywhere; }
+.prose-content p, .prose-content ul, .prose-content ol { margin-bottom: 1.2rem; }
 .prose-content ul { list-style: disc; padding-inline-start: 1.5rem; }
 .prose-content ol { list-style: decimal; padding-inline-start: 1.5rem; }
-.prose-content h2, .prose-content h3, .prose-content h4 { font-weight: 700; line-height: 1.5; margin: 1.75rem 0 .6rem; color: var(--color-brand-dark); }
-.prose-content h2 { font-size: 1.4rem; }
-.prose-content h3 { font-size: 1.2rem; }
-.prose-content blockquote { margin: 1.25rem 0; padding: .75rem 1.1rem; border-inline-start: 4px solid var(--color-brand); background: var(--color-brand-soft); border-radius: .5rem; }
-.prose-content a { color: var(--color-brand); text-decoration: underline; text-underline-offset: 3px; }
-.prose-content a:hover { color: var(--color-brand-dark); }
-.prose-content img, .prose-content iframe, .prose-content video { max-width: 100%; height: auto; border-radius: .75rem; }
-.prose-content img { margin: 1rem auto; }
+.prose-content li::marker { color: var(--color-gold); }
+.prose-content h2, .prose-content h3, .prose-content h4 { font-family: var(--font-anek), ui-sans-serif, system-ui, sans-serif; font-weight: 800; line-height: 1.45; margin: 2.2rem 0 .7rem; color: var(--color-deep); }
+.prose-content h2 { font-size: 1.6rem; }
+.prose-content h3 { font-size: 1.35rem; }
+.prose-content strong { color: var(--color-ink); font-weight: 700; }
+/* the question a fatwa answers: first paragraph when it is wholly italic */
+.prose-content > p:first-child:has(> em:only-child) {
+  font-size: 1.1rem; padding: 1.2rem 1.4rem; margin-bottom: 1.8rem; border-radius: 1.25rem;
+  background: linear-gradient(135deg, var(--color-sand), var(--color-ivory)); border: 1px solid rgb(201 162 75 / .45);
+  border-inline-start: 5px solid var(--color-gold);
+}
+.prose-content blockquote {
+  position: relative; margin: 1.8rem 0; padding: 1.1rem 1.4rem 1.1rem 3.2rem; border-radius: 1rem;
+  background: var(--color-sand); border: 1px solid rgb(201 162 75 / .4);
+}
+.prose-content blockquote::before { content: "\201C"; position: absolute; left: 1rem; top: -.15rem; font-size: 3.6rem; line-height: 1; color: var(--color-gold); font-family: Georgia, serif; }
+.prose-content a { color: var(--color-jade); text-decoration: underline; text-decoration-color: var(--color-gold); text-decoration-thickness: 2px; text-underline-offset: 4px; }
+.prose-content a:hover { color: var(--color-deep); }
+.prose-content img, .prose-content iframe, .prose-content video { max-width: 100%; height: auto; border-radius: 1rem; }
+.prose-content img { margin: 1.2rem auto; }
 .prose-content table { display: block; overflow-x: auto; max-width: 100%; border-collapse: collapse; }
-.prose-content td, .prose-content th { border: 1px solid #dfe5dd; padding: .4rem .7rem; }
-.prose-content hr { margin: 1.5rem 0; border-color: #dfe5dd; }
+.prose-content td, .prose-content th { border: 1px solid rgb(201 162 75 / .4); padding: .5rem .8rem; }
+.prose-content hr { margin: 2rem 0; border: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--color-gold), transparent); }

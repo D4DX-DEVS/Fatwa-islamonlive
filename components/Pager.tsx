@@ -14,16 +14,17 @@ function windowed(n: number, last: number) {
 
 export default function Pager({ page, last, href }: { page: number; last: number; href: (n: number) => string }) {
   if (last < 2) return null;
-  const cell = "grid h-10 min-w-10 place-items-center rounded-xl px-3 text-sm font-semibold ring-1 ring-black/10 transition-colors";
+  const cell = "grid h-11 min-w-11 place-items-center rounded-full border px-4 text-sm font-extrabold transition-all duration-300";
+  const idle = `${cell} border-gold/40 bg-paper text-deep hover:-translate-y-0.5 hover:border-deep hover:bg-deep hover:text-champagne`;
   return (
-    <nav aria-label="Pages" className="mt-8 flex flex-wrap items-center justify-center gap-2">
-      {page > 1 && <Link href={href(page - 1)} className={`${cell} bg-white hover:bg-brand-soft`}>← Newer</Link>}
+    <nav aria-label="Pages" className="mt-12 flex flex-wrap items-center justify-center gap-2.5">
+      {page > 1 && <Link href={href(page - 1)} className={idle}>← Newer</Link>}
       {windowed(page, last).map((x) =>
-        typeof x === "string" ? <span key={x} className="px-1 text-neutral-400">…</span>
-        : x === page ? <span key={x} aria-current="page" className={`${cell} bg-brand text-white ring-brand`}>{x}</span>
-        : <Link key={x} href={href(x)} className={`${cell} bg-white hover:bg-brand-soft`}>{x}</Link>,
+        typeof x === "string" ? <span key={x} className="px-1 text-gold">…</span>
+        : x === page ? <span key={x} aria-current="page" className={`${cell} border-deep bg-deep text-gold shadow-lg shadow-deep/30`}>{x}</span>
+        : <Link key={x} href={href(x)} className={idle}>{x}</Link>,
       )}
-      {page < last && <Link href={href(page + 1)} className={`${cell} bg-white hover:bg-brand-soft`}>Older →</Link>}
+      {page < last && <Link href={href(page + 1)} className={idle}>Older →</Link>}
     </nav>
   );
 }

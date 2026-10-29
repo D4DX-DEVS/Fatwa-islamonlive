@@ -6,58 +6,81 @@ import { FOOTER_LINKS } from "@/lib/site";
 
 // The public site's header, menu, ticker and footer (the admin has its own shell)
 export default async function SiteShell({ children }: { children: React.ReactNode }) {
-  const all = await categories();
+  const [all, ticker] = await Promise.all([categories(), latest(0, 5)]);
   const names = new Map(all.map((c) => [c.id, c.name]));
-  const ticker = await latest(0, 5);
   return (
     <>
-      <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:shadow-lg">Skip to content</a>
-      <header className="bg-white">
-        <div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-3">
-          <Link href="/"><Image src="/logo.png" alt="Fatwa Islamonlive" width={300} height={99} priority className="h-[52px] w-auto shrink sm:h-[64px]" /></Link>
-          <form action="/search" role="search" className="relative ml-auto">
-            <svg aria-hidden width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
-            <input name="q" placeholder="Search…" aria-label="Search" className="w-32 rounded-full border border-neutral-200 bg-neutral-50 py-2 pl-9 pr-4 text-sm outline-none transition-all focus:w-40 focus:border-brand focus:bg-white focus:ring-4 focus:ring-brand/10 sm:w-60 sm:focus:w-72" />
+      <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded-lg focus:bg-gold focus:px-4 focus:py-2 focus:font-bold focus:text-ink focus:shadow-lg">Skip to content</a>
+
+      <div className="bg-ink text-champagne/80">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em]">
+          <p className="truncate">The comprehensive fatwa portal in Malayalam</p>
+          <p className="flex shrink-0 gap-5">
+            <a href={FOOTER_LINKS[0].href} className="transition-colors hover:text-gold">Support us</a>
+            <Link href="/feed.xml" className="max-sm:hidden transition-colors hover:text-gold">RSS</Link>
+          </p>
+        </div>
+      </div>
+
+      <header className="geo bg-ivory">
+        <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-4">
+          <Link href="/" className="rise shrink-0"><Image src="/logo.png" alt="Fatwa Islamonlive" width={300} height={99} priority className="h-[52px] w-auto sm:h-[68px]" /></Link>
+          <form action="/search" role="search" className="group/search rise relative ml-auto [--i:1]">
+            <svg aria-hidden width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gold"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
+            <input name="q" placeholder="Search…" aria-label="Search" className="w-32 rounded-full border border-gold/50 bg-paper py-2.5 pl-11 pr-4 text-sm font-medium outline-none transition-all duration-500 placeholder:text-ink/40 focus:w-44 focus:border-gold focus:ring-4 focus:ring-gold/25 sm:w-64 sm:focus:w-80" />
           </form>
-          <a href="https://www.islamonlive.in" aria-label="Islamonlive" className="hidden shrink-0 md:block"><Image src="/islamonlive-logo.png" alt="Islamonlive" width={298} height={81} className="h-[54px] w-auto" /></a>
+          <a href="https://www.islamonlive.in" aria-label="Islamonlive" className="rise hidden shrink-0 transition-transform duration-500 hover:scale-105 md:block [--i:2]"><Image src="/islamonlive-logo.png" alt="Islamonlive" width={298} height={81} className="h-[54px] w-auto" /></a>
         </div>
       </header>
+
       <Nav names={names} />
-      <div className="border-b border-black/5 bg-white">
-        <div className="mx-auto flex max-w-6xl items-center gap-3 overflow-hidden px-4 py-2 text-sm">
-          <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-[#dd3333] px-3 py-0.5 text-xs font-bold uppercase tracking-wide text-white">
-            <span aria-hidden className="size-1.5 animate-pulse rounded-full bg-white" />Latest
-          </span>
-          <div className="flex min-w-0 gap-6 overflow-x-auto whitespace-nowrap [scrollbar-width:none]">
-            {ticker.map((p) => <Link key={p.id} href={`/post/${p.id}`} className="hover:text-brand">{p.title}</Link>)}
+
+      <div className="border-b border-gold/40 bg-ink text-ivory">
+        <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-2.5 text-sm">
+          <span className="sheen pulse flex shrink-0 items-center gap-2 rounded-full bg-gold px-3.5 py-1 text-[11px] font-extrabold uppercase tracking-[0.2em] text-ink">Latest</span>
+          <div className="relative min-w-0 flex-1 overflow-hidden [mask-image:linear-gradient(90deg,transparent,#000_4%,#000_96%,transparent)]">
+            {/* the list twice, scrolled by half its width, loops without a jump; the copy is hidden from screen readers */}
+            <div className="marquee flex w-max whitespace-nowrap">
+              {[...ticker, ...ticker].map((p, i) => (
+                <Link key={i} href={`/post/${p.id}`} aria-hidden={i >= ticker.length || undefined} tabIndex={i >= ticker.length ? -1 : undefined} className="pr-12 font-medium transition-colors hover:text-gold">
+                  <span aria-hidden className="mr-3 text-gold">◆</span>{p.title}
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       </div>
-      <main id="main" className="mx-auto max-w-6xl px-4 py-8">{children}</main>
-      <footer className="mt-12 bg-[#10241a] text-neutral-300">
-        <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 md:grid-cols-[1.2fr_1fr_2fr]">
-          <div>
-            <span className="inline-block rounded-xl bg-white p-3"><Image src="/islamonlive-logo.png" alt="Islamonlive" width={298} height={81} className="h-10 w-auto" /></span>
-            <p className="mt-3 max-w-xs text-sm leading-relaxed text-neutral-400">The one and only comprehensive Fatwa portal in Malayalam.</p>
+
+      <main id="main" className="mx-auto max-w-7xl px-4 py-10">{children}</main>
+
+      <footer className="geo mt-16 border-t-4 border-gold bg-deep text-ivory/80">
+        <div className="mx-auto max-w-7xl px-4 pb-8 pt-14">
+          <p className="max-w-3xl text-3xl font-extrabold leading-snug text-ivory sm:text-5xl sm:leading-tight">
+            The one and only comprehensive <span className="text-gold">Fatwa</span> portal in Malayalam.
+          </p>
+          <div className="mt-12 grid gap-10 md:grid-cols-[1fr_1.6fr]">
+            <div>
+              <span className="inline-block rounded-2xl bg-ivory p-3.5"><Image src="/islamonlive-logo.png" alt="Islamonlive" width={298} height={81} className="h-11 w-auto" /></span>
+              <nav aria-label="Footer" className="mt-8">
+                <h2 className="mb-4 text-[11px] font-extrabold uppercase tracking-[0.25em] text-gold">Links</h2>
+                <ul className="space-y-2.5 text-sm font-semibold">
+                  {FOOTER_LINKS.map((l) => <li key={l.href}><a href={l.href} className="transition-colors hover:text-gold"><span className="sweep">{l.label}</span></a></li>)}
+                  <li><Link href="/feed.xml" className="transition-colors hover:text-gold"><span className="sweep">RSS</span></Link></li>
+                  <li><Link href="/admin" className="text-ivory/40 transition-colors hover:text-gold">Admin</Link></li>
+                </ul>
+              </nav>
+            </div>
+            <div>
+              <h2 className="mb-4 text-[11px] font-extrabold uppercase tracking-[0.25em] text-gold">Categories</h2>
+              <p className="flex flex-wrap gap-2 text-[13px] font-semibold">
+                {all.filter((c) => c.n > 0).map((c) => (
+                  <Link key={c.id} href={`/category/${c.id}`} className="rounded-full border border-gold/40 px-3.5 py-1 text-champagne transition-all duration-300 hover:-translate-y-0.5 hover:border-gold hover:bg-gold hover:text-ink">{c.name}</Link>
+                ))}
+              </p>
+            </div>
           </div>
-          <nav aria-label="Footer">
-            <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-white">Links</h2>
-            <ul className="space-y-2 text-sm">
-              {FOOTER_LINKS.map((l) => <li key={l.href}><a href={l.href} className="hover:text-white">{l.label}</a></li>)}
-              <li><Link href="/feed.xml" className="hover:text-white">RSS</Link></li>
-              <li><Link href="/admin" className="text-neutral-500 hover:text-white">Admin</Link></li>
-            </ul>
-          </nav>
-          <div>
-            <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-white">Categories</h2>
-            <p className="flex flex-wrap gap-2 text-xs">
-              {all.filter((c) => c.n > 0).map((c) => (
-                <Link key={c.id} href={`/category/${c.id}`} className="rounded-full bg-white/10 px-3 py-1 transition-colors hover:bg-white/20 hover:text-white">{c.name}</Link>
-              ))}
-            </p>
-          </div>
+          <p className="mt-14 border-t border-gold/25 pt-6 text-center text-xs tracking-wide text-ivory/50">© Copyright islamonlive.in, All Rights Reserved</p>
         </div>
-        <p className="border-t border-white/10 py-4 text-center text-xs text-neutral-500">© Copyright islamonlive.in, All Rights Reserved</p>
       </footer>
     </>
   );

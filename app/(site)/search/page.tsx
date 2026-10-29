@@ -16,13 +16,13 @@ export default async function Search({ searchParams }: PageProps<"/search">) {
   if (!n || n > last) notFound();
   return (
     <>
-      <BlockTitle count={q ? results.length : undefined}>{q ? `Search: ${q}` : "Search"}</BlockTitle>
+      <BlockTitle eyebrow="Search" count={q ? results.length : undefined}>{q ? q : "Find a fatwa"}</BlockTitle>
       {/* the header box is small on phones, so the page repeats it */}
-      <form action="/search" role="search" className="mb-5 flex gap-2">
-        <input name="q" defaultValue={q} placeholder="Search fatwas…" aria-label="Search" className="min-w-0 flex-1 rounded-xl border border-neutral-200 bg-white px-4 py-2.5 outline-none focus:border-brand focus:ring-4 focus:ring-brand/10" />
-        <button className="rounded-xl bg-brand px-5 font-semibold text-white transition-colors hover:bg-brand-dark">Search</button>
+      <form action="/search" role="search" className="rise mb-8 flex gap-3 [--i:2]">
+        <input name="q" defaultValue={q} placeholder="Search fatwas…" aria-label="Search" className="min-w-0 flex-1 rounded-full border border-gold/50 bg-paper px-6 py-3.5 text-lg font-semibold outline-none transition-shadow placeholder:text-ink/35 focus:border-gold focus:ring-4 focus:ring-gold/25" />
+        <button className="sheen rounded-full bg-deep px-8 font-extrabold uppercase tracking-[0.15em] text-champagne transition-colors hover:bg-ink">Search</button>
       </form>
-      {q ? <PostList posts={results.slice((n - 1) * PAGE_SIZE, n * PAGE_SIZE)} /> : <p className="text-neutral-500">Type a query above.</p>}
+      {q ? <PostList posts={results.slice((n - 1) * PAGE_SIZE, n * PAGE_SIZE)} /> : <p className="text-lg font-semibold text-ink/55">Type a query above.</p>}
       <Pager page={n} last={last} href={(p) => `/search?q=${encodeURIComponent(q)}${p > 1 ? `&page=${p}` : ""}`} />
     </>
   );

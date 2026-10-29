@@ -7,10 +7,11 @@
     "build": "next build",
     "lint": "eslint",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
-    "deploy": "opennextjs-cloudflare build && node scripts/strip-env.mjs && node --env-file=.env node_modules/@opennextjs/cloudflare/dist/cli/index.js deploy",
+    "deploy": "opennextjs-cloudflare build && node scripts/strip-env.mjs && node --env-file=.env node_modules/@opennextjs/cloudflare/dist/cli/index.js deploy && node --env-file=.env scripts/purge-cache.mjs",
     "db:seed:remote": "node --env-file=.env node_modules/wrangler/bin/wrangler.js d1 execute DB --remote --file d1/seed.sql",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
-    "cf": "node --env-file=.env node_modules/wrangler/bin/wrangler.js"
+    "cf": "node --env-file=.env node_modules/wrangler/bin/wrangler.js",
+    "cache:purge": "node --env-file=.env scripts/purge-cache.mjs"
   },
   "dependencies": {
     "@opennextjs/cloudflare": "^1.20.14",
