@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/Link";
 import { isAdmin } from "@/lib/auth";
 import { PAGE_SIZE, categoryNames, countAll, latest, search } from "@/lib/db";
 import { login } from "./actions";

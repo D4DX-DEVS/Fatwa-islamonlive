@@ -1,23 +1,28 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/Link";
 import { notFound } from "next/navigation";
 import PostList from "@/components/PostList";
 import Thumb from "@/components/Thumb";
-import { inCategories, post, postCategories, tags } from "@/lib/db";
+import { postBundle } from "@/lib/db";
 import { formatDate } from "@/lib/site";
 
+// the page and its metadata share one cached database call
+const load = async (params: PageProps<"/post/[id]">["params"]) => {
+  const id = Number((await params).id);
+  return Number.isInteger(id) ? postBundle(id) : null;
+};
+
 export async function generateMetadata({ params }: PageProps<"/post/[id]">): Promise<Metadata> {
-  const p = await post(Number((await params).id));
+  const p = (await load(params))?.post;
   return p
     ? { title: p.title, description: p.excerpt.slice(0, 160), openGraph: { title: p.title, description: p.excerpt.slice(0, 160), type: "article", ...(p.image && { images: [p.image] }) } }
     : {};
 }
 
 export default async function Post({ params }: PageProps<"/post/[id]">) {
-  const p = await post(Number((await params).id));
-  if (!p) notFound();
-  const [cats, tg] = await Promise.all([postCategories(p.id), tags(p.id)]);
-  const related = cats.length ? (await inCategories(cats.map((c) => c.id), 5)).filter((r) => r.id !== p.id).slice(0, 4) : [];
+  const bundle = await load(params);
+  if (!bundle?.post) notFound();
+  const { post: p, cats, tags: tg, related } = bundle;
 
   const url = `${process.env.SITE_URL ?? ""}/post/${p.id}`;
   const share = [

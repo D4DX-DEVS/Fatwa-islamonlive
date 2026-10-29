@@ -48,7 +48,15 @@ async function run(stmts: Stmt[]): Promise<Result[]> {
   const prepared = stmts.map((s) => db.prepare(s.sql).bind(...s.params));
   return (prepared.length === 1 ? [await prepared[0].all()] : await db.batch(prepared)) as unknown as Result[];
 }
-const write = run;
+// Every change also marks the stored pages (worker.ts) out of date; this location sees it at once, the others within 30 s
+async function write(stmts: Stmt[]) {
+  const out = await run(stmts);
+  if (prod) {
+    await getCloudflareContext().env.UPLOADS.put("cache/purged", String(Date.now()));
+    await (caches as unknown as { default: Cache }).default.delete(new Request("https://cache.internal/purged"));
+  }
+  return out;
+}
 
 const rows = async <T>(sql: string, ...params: unknown[]) => (await run([{ sql, params }]))[0].results as T[];
 const row = async <T>(sql: string, ...params: unknown[]) => (await rows<T>(sql, ...params))[0] ?? null;
@@ -58,22 +66,40 @@ export type Post = { id: number; title: string; excerpt: string; content: string
 export type Category = { id: number; name: string; parent: number };
 export type PostCard = Pick<Post, "id" | "title" | "excerpt" | "date" | "image" | "author">;
 
-const LIST = `SELECT p.id, p.title, p.excerpt, p.date, p.image, a.name AS author FROM posts p LEFT JOIN authors a ON a.id = p.author_id`;
+// Post cards. Author names are looked up after the page is cut, not for every matching post.
+const cards = (from: string) =>
+  `SELECT x.id, x.title, x.excerpt, x.date, x.image, a.name AS author FROM (SELECT p.id, p.title, p.excerpt, p.date, p.image, p.author_id FROM posts p ${from} ORDER BY p.date DESC LIMIT ? OFFSET ?) x LEFT JOIN authors a ON a.id = x.author_id ORDER BY x.date DESC`;
+const inGroup = (n: number) => `WHERE p.id IN (SELECT post_id FROM post_categories WHERE category_id IN (${Array(n).fill("?").join(",")}))`;
 
 export const PAGE_SIZE = 20;
 
 // cache(): the layout and the page both ask for these in one request, so they share one query
-export const latest = cache((offset: number) => rows<PostCard>(`${LIST} ORDER BY p.date DESC LIMIT ? OFFSET ?`, PAGE_SIZE, offset));
+export const latest = cache((offset: number, limit = PAGE_SIZE) => rows<PostCard>(cards(""), limit, offset));
 export const countAll = async () => (await row<{ n: number }>("SELECT COUNT(*) n FROM posts"))!.n;
 
 const ids = async (table: string) => (await rows<{ id: number }>(`SELECT id FROM ${table}`)).map((r) => String(r.id));
 export const postIds = () => ids("posts");
 export const categoryIds = () => ids("categories");
 
+// admin edit form
 export const post = (id: number) =>
   row<Post>("SELECT p.*, a.name AS author FROM posts p LEFT JOIN authors a ON a.id = p.author_id WHERE p.id = ?", id);
 export const postCategories = (id: number) =>
   rows<Category>("SELECT c.id, c.name, c.parent FROM categories c JOIN post_categories pc ON pc.category_id = c.id WHERE pc.post_id = ?", id);
+
+// everything a post page shows, in one database round trip (cache(): the page and its metadata share it)
+export const postBundle = cache(async (id: number) => {
+  const [p, c, t, r] = (
+    await run([
+      stmt("SELECT p.*, a.name AS author FROM posts p LEFT JOIN authors a ON a.id = p.author_id WHERE p.id = ?", id),
+      stmt("SELECT c.id, c.name, c.parent FROM categories c JOIN post_categories pc ON pc.category_id = c.id WHERE pc.post_id = ?", id),
+      stmt("SELECT t.id, t.name FROM tags t JOIN post_tags pt ON pt.tag_id = t.id WHERE pt.post_id = ?", id),
+      // related: newest other posts sharing a category
+      stmt(cards("WHERE p.id IN (SELECT post_id FROM post_categories WHERE category_id IN (SELECT category_id FROM post_categories WHERE post_id = ?)) AND p.id <> ?"), id, id, 4, 0),
+    ])
+  ).map((x) => x.results);
+  return { post: (p[0] as Post) ?? null, cats: c as Category[], tags: t as { id: number; name: string }[], related: r as PostCard[] };
+});
 
 // category names for a page of posts in one query (admin list)
 export const categoryNames = async (postIds: number[]) => {
@@ -93,31 +119,40 @@ export const categories = cache(() =>
     "SELECT c.id, c.name, c.parent, EXISTS(SELECT 1 FROM post_categories pc WHERE pc.category_id = c.id) AS n FROM categories c ORDER BY c.name",
   ),
 );
-export const category = (id: number) => row<Category>("SELECT id, name, parent FROM categories WHERE id = ?", id);
-export const byCategory = (id: number) =>
-  rows<PostCard>(`${LIST} JOIN post_categories pc ON pc.post_id = p.id WHERE pc.category_id = ? ORDER BY p.date DESC`, id);
 
-// newest posts across the given categories (direct membership, like the original blocks)
-export const inCategories = (catIds: number[], limit: number) =>
-  rows<PostCard>(
-    `${LIST} WHERE p.id IN (SELECT post_id FROM post_categories WHERE category_id IN (${catIds.map(() => "?").join(",")})) ORDER BY p.date DESC LIMIT ?`,
-    ...catIds,
-    limit,
-  );
-
-// one query per group of categories, sent as a single batch (a database round trip per section would make the home page slow)
+// newest posts for each group of categories, sent as a single batch (direct membership, like the original blocks)
 export const inEach = async (groups: number[][], limit: number) =>
-  (await run(groups.map((g) => stmt(`${LIST} WHERE p.id IN (SELECT post_id FROM post_categories WHERE category_id IN (${g.map(() => "?").join(",")})) ORDER BY p.date DESC LIMIT ?`, ...g, limit)))).map((r) => r.results as PostCard[]);
+  (await run(groups.map((g) => stmt(cards(inGroup(g.length)), ...g, limit, 0)))).map((r) => r.results as PostCard[]);
 
-export const tags = (postId: number) =>
-  rows<{ id: number; name: string }>("SELECT t.id, t.name FROM tags t JOIN post_tags pt ON pt.tag_id = t.id WHERE pt.post_id = ?", postId);
-export const tag = (id: number) => row<{ id: number; name: string }>("SELECT id, name FROM tags WHERE id = ?", id);
-export const byTag = (id: number) =>
-  rows<PostCard>(`${LIST} JOIN post_tags pt ON pt.post_id = p.id WHERE pt.tag_id = ? ORDER BY p.date DESC`, id);
+// a category, tag or author page: its heading, the total and one page of posts, in one round trip
+type Listing<H> = { head: H | null; total: number; posts: PostCard[] };
+const listing = async <H>(head: Stmt, count: Stmt, list: Stmt): Promise<Listing<H>> => {
+  const [h, c, l] = (await run([head, count, list])).map((r) => r.results);
+  return { head: (h[0] as H) ?? null, total: (c[0] as { n: number }).n, posts: l as PostCard[] };
+};
+export const categoryPage = cache((id: number, offset: number) =>
+  listing<Category>(
+    stmt("SELECT id, name, parent FROM categories WHERE id = ?", id),
+    stmt("SELECT COUNT(*) n FROM post_categories WHERE category_id = ?", id),
+    stmt(cards("JOIN post_categories pc ON pc.post_id = p.id WHERE pc.category_id = ?"), id, PAGE_SIZE, offset),
+  ),
+);
+export const tagPage = cache((id: number, offset: number) =>
+  listing<{ id: number; name: string }>(
+    stmt("SELECT id, name FROM tags WHERE id = ?", id),
+    stmt("SELECT COUNT(*) n FROM post_tags WHERE tag_id = ?", id),
+    stmt(cards("JOIN post_tags pt ON pt.post_id = p.id WHERE pt.tag_id = ?"), id, PAGE_SIZE, offset),
+  ),
+);
+export const authorPage = cache((id: number, offset: number) =>
+  listing<{ id: number; name: string }>(
+    stmt("SELECT id, name FROM authors WHERE id = ?", id),
+    stmt("SELECT COUNT(*) n FROM posts WHERE author_id = ?", id),
+    stmt(cards("WHERE p.author_id = ?"), id, PAGE_SIZE, offset),
+  ),
+);
 
 export const authors = () => rows<{ id: number; name: string }>("SELECT id, name FROM authors ORDER BY name");
-export const author = (id: number) => row<{ id: number; name: string }>("SELECT id, name FROM authors WHERE id = ?", id);
-export const byAuthor = (id: number) => rows<PostCard>(`${LIST} WHERE p.author_id = ? ORDER BY p.date DESC`, id);
 
 // image: undefined = keep the current one, null = remove it, string = new image URL
 export type PostInput = { title: string; excerpt: string; content: string; author_id: number; categoryIds: number[]; image?: string | null };
@@ -151,7 +186,7 @@ export const deletePost = (id: number) =>
 
 export const search = (q: string) => {
   const like = `%${q.replace(/[%_\\]/g, "\\$&")}%`;
-  return rows<PostCard>(`${LIST} WHERE p.title LIKE ? ESCAPE '\\' OR p.content LIKE ? ESCAPE '\\' ORDER BY p.date DESC LIMIT 500`, like, like);
+  return rows<PostCard>(cards("WHERE p.title LIKE ? ESCAPE '\\' OR p.content LIKE ? ESCAPE '\\'"), like, like, 500, 0);
 };
 
 // slugs are stored percent-encoded and lowercase (as WordPress emitted them); the URL may arrive decoded or encoded

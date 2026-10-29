@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/components/Link";
 import Nav from "@/components/Nav";
 import { categories, latest } from "@/lib/db";
 import { FOOTER_LINKS } from "@/lib/site";
@@ -8,7 +8,7 @@ import { FOOTER_LINKS } from "@/lib/site";
 export default async function SiteShell({ children }: { children: React.ReactNode }) {
   const all = await categories();
   const names = new Map(all.map((c) => [c.id, c.name]));
-  const ticker = (await latest(0)).slice(0, 5);
+  const ticker = await latest(0, 5);
   return (
     <>
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:shadow-lg">Skip to content</a>

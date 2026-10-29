@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/Link";
 import { MENU, MENU_MORE, type MenuItem } from "@/lib/site";
 
 const link = "block whitespace-nowrap px-4 py-3 transition-colors hover:bg-white/15 focus-visible:bg-white/15 md:my-1.5 md:rounded-lg md:px-3 md:py-1.5";

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/Link";
 import { isAdmin } from "@/lib/auth";
 import { logout } from "./actions";
 

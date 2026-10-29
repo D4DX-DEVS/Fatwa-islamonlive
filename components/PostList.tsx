@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/Link";
 import type { PostCard } from "@/lib/db";
 import { formatDate } from "@/lib/site";
 import Thumb from "./Thumb";

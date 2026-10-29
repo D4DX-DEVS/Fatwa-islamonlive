@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/Link";
 import { save, remove } from "@/app/admin/actions";
 import DeleteButton from "@/components/DeleteButton";
 import { authors, categories, type Post } from "@/lib/db";

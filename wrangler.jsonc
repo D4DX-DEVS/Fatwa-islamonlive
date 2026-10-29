@@ -10,5 +10,7 @@
   "d1_databases": [{ "binding": "DB", "database_name": "fatwa", "database_id": "e2aaf3e0-b88a-4529-a3fc-64d3a62f0096" }],
   // images uploaded in the admin (served by the /media route)
   "r2_buckets": [{ "binding": "UPLOADS", "bucket_name": "fatwa" }],
-  "vars": { "SITE_URL": "https://fatwa.islamonlive.in" }
+  "vars": { "SITE_URL": "https://fatwa.islamonlive.in" },
+  // fills the page cache (worker.ts): renders a few pages nobody has visited yet on every run
+  "triggers": { "crons": ["*/5 * * * *"] }
 }

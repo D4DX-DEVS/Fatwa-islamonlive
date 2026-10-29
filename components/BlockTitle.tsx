@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/Link";
 
 // Page heading: green accent bar, title, optional count pill
 export default function BlockTitle({ children, href, count }: { children: React.ReactNode; href?: string; count?: number }) {

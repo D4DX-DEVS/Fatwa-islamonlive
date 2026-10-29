@@ -47,15 +47,22 @@ Only if you ever need to reload the database from scratch: `npm run db:seed:remo
 ## Page cache (stays inside the free plan)
 
 D1's free tier allows 5M row reads a day and an uncached page costs from a few hundred to a few thousand, so
-`worker.ts` (the Worker's entry point, wrapping the OpenNext app) keeps public pages in the edge cache:
-a stored copy is served for `FRESH` = 10 minutes, then served once more instantly while a new copy renders in
-the background. Consequences:
+`worker.ts` (the Worker's entry point, wrapping the OpenNext app) stores every public page:
 
-- Admin edits show on public pages within about 10 minutes (the admin pages themselves are always live).
-- Never cached: `/admin`, form posts, Next client-navigation requests, error pages, anything with a cookie.
-- If D1 ever fails (limit reached), pages already in the cache keep being served from it for up to 24 hours.
-- Change the window by editing `FRESH` in `worker.ts` and redeploying.
-- The cache is per Cloudflare location, so each location renders a page once per window.
+1. each Cloudflare location keeps its own quick copy;
+2. the R2 bucket (`cache/pages/...`) keeps one copy for the whole world, so a page is rendered once, not once per location.
+
+A stored page stays valid until the next change made in the admin (every save, create or delete writes
+`cache/purged`; the editing location sees it at once, the others within 30 seconds) or 7 days. After a change a page
+renders again the next time someone asks for it. A Cron Trigger (every 5 minutes, `wrangler.jsonc`) also renders up to
+5 pages per run that are not stored or are out of date, so nearly every page is stored before anyone visits it.
+
+- Never stored: `/admin`, form posts, search results, error pages, anything that sets a cookie.
+- If D1 fails (for example the daily limit) while a page renders, the old stored copy is served instead of an error.
+- Each page makes at most two database round trips (menu + page data); post, category, author and tag pages read only the rows they show.
+- Links do not prefetch (`components/Link.tsx`): every prefetch would be a server request.
+- Clear the whole cache by hand: `npm run cf -- r2 object put fatwa/cache/purged --pipe --remote <<< "$(date +%s)000"`
+  (any newer timestamp works).
 
 ## Admin images
 

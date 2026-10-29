@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/Link";
 import { permanentRedirect } from "next/navigation";
 import Thumb from "@/components/Thumb";
 import { categories, inEach, latest, type PostCard } from "@/lib/db";

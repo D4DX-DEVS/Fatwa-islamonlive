@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/Link";
 
 // Rendered inside the surrounding layout (the public pages and the admin both have their own shell)
 export default function NotFound() {

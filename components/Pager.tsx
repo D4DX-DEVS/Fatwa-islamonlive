@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/Link";
 
 // ?page=N -> N (1 when absent); 0 when it is not a positive whole number
 export function parsePage(raw: string | string[] | undefined) {
