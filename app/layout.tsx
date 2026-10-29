@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { Noto_Sans_Malayalam } from "next/font/google";
 import "./globals.css";
 
+// Every page reads D1 per request (no build-time database, admin edits show instantly)
+export const dynamic = "force-dynamic";
+
 const font = Noto_Sans_Malayalam({ subsets: ["malayalam", "latin"], display: "swap" });
 
 export const metadata: Metadata = {

@@ -1,6 +1,14 @@
 {
-  // Only used by the `npm run cf` / `npm run db:seed:remote` commands to find the D1 database; the site itself runs on Vercel.
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "fatwa",
-  "d1_databases": [{ "binding": "DB", "database_name": "fatwa", "database_id": "e2aaf3e0-b88a-4529-a3fc-64d3a62f0096" }]
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2025-12-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": { "directory": ".open-next/assets", "binding": "ASSETS" },
+  "services": [{ "binding": "WORKER_SELF_REFERENCE", "service": "fatwa" }],
+  // ids are not secret; wrangler.jsonc cannot read .env, so the D1 id from there is copied here
+  "d1_databases": [{ "binding": "DB", "database_name": "fatwa", "database_id": "e2aaf3e0-b88a-4529-a3fc-64d3a62f0096" }],
+  // images uploaded in the admin (served by the /media route)
+  "r2_buckets": [{ "binding": "UPLOADS", "bucket_name": "fatwa" }],
+  "vars": { "SITE_URL": "https://fatwa.islamonlive.in" }
 }

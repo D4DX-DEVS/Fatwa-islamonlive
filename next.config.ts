@@ -4,6 +4,8 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   // Images are small and served as static files
   images: { unoptimized: true },
+  // admin image uploads go through a server action (4 MB image + form overhead; the default limit is 1 MB)
+  experimental: { serverActions: { bodySizeLimit: "6mb" } },
   async headers() {
     return [
       {

@@ -1,8 +1,9 @@
-import { updateTag } from "next/cache";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { cache } from "react";
 
-// On Vercel the data lives in Cloudflare D1, reached over its REST API. In dev (no VERCEL, unless REMOTE_DB=1)
-// a private SQLite copy of data/fatwa.db is used, so local tests never touch live data.
-export const remote = !!process.env.VERCEL || process.env.REMOTE_DB === "1";
+// In production (the Cloudflare Worker) the database is the D1 binding declared in wrangler.jsonc. In dev
+// (`next dev`) a private SQLite copy of data/fatwa.db is used, so local tests never touch live data.
+export const prod = process.env.NODE_ENV === "production";
 
 type Stmt = { sql: string; params: unknown[] };
 type Result = { results: Record<string, unknown>[]; meta: { last_row_id: number } };
@@ -18,7 +19,7 @@ async function local(stmts: Stmt[]): Promise<Result[]> {
   const db = sqlite;
   const exec = (s: Stmt): Result => {
     const q = db.prepare(s.sql);
-    if (/^\s*select/i.test(s.sql)) return { results: q.all(...(s.params as never[])) as Record<string, unknown>[], meta: { last_row_id: 0 } };
+    if (/^s*select/i.test(s.sql)) return { results: q.all(...(s.params as never[])) as Record<string, unknown>[], meta: { last_row_id: 0 } };
     return { results: [], meta: { last_row_id: Number(q.run(...(s.params as never[])).lastInsertRowid) } };
   };
   if (stmts.length === 1) return [exec(stmts[0])];
@@ -33,25 +34,14 @@ async function local(stmts: Stmt[]): Promise<Result[]> {
   }
 }
 
-// Reads are cached by Next (tag "db") until an admin write expires the tag; a batch runs as one transaction.
-async function run(stmts: Stmt[], write = false): Promise<Result[]> {
-  if (!remote) return local(stmts);
-  const { CLOUDFLARE_ACCOUNT_ID: account, D1_DATABASE_ID: database, CLOUDFLARE_API_TOKEN: token } = process.env;
-  const res = await fetch(`https://api.cloudflare.com/client/v4/accounts/${account}/d1/database/${database}/query`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-    body: JSON.stringify(stmts.length === 1 ? stmts[0] : { batch: stmts }),
-    ...(write ? { cache: "no-store" } : { next: { revalidate: 3600, tags: ["db"] } }),
-  });
-  const json = await res.json();
-  if (!json.success) throw new Error(`D1 query failed: ${JSON.stringify(json.errors)}`);
-  return json.result;
+// A batch runs as one transaction on both drivers.
+async function run(stmts: Stmt[]): Promise<Result[]> {
+  if (!prod) return local(stmts);
+  const db = getCloudflareContext().env.DB;
+  const prepared = stmts.map((s) => db.prepare(s.sql).bind(...s.params));
+  return (prepared.length === 1 ? [await prepared[0].all()] : await db.batch(prepared)) as unknown as Result[];
 }
-const write = async (stmts: Stmt[]) => {
-  const out = await run(stmts, true);
-  updateTag("db"); // only called from server actions, so the next read is fresh
-  return out;
-};
+const write = run;
 
 const rows = async <T>(sql: string, ...params: unknown[]) => (await run([{ sql, params }]))[0].results as T[];
 const row = async <T>(sql: string, ...params: unknown[]) => (await rows<T>(sql, ...params))[0] ?? null;
@@ -65,7 +55,8 @@ const LIST = `SELECT p.id, p.title, p.excerpt, p.date, p.image, a.name AS author
 
 export const PAGE_SIZE = 20;
 
-export const latest = (offset = 0) => rows<PostCard>(`${LIST} ORDER BY p.date DESC LIMIT ? OFFSET ?`, PAGE_SIZE, offset);
+// cache(): the layout and the page both ask for these in one request, so they share one query
+export const latest = cache((offset: number) => rows<PostCard>(`${LIST} ORDER BY p.date DESC LIMIT ? OFFSET ?`, PAGE_SIZE, offset));
 export const countAll = async () => (await row<{ n: number }>("SELECT COUNT(*) n FROM posts"))!.n;
 
 const ids = async (table: string) => (await rows<{ id: number }>(`SELECT id FROM ${table}`)).map((r) => String(r.id));
@@ -89,10 +80,11 @@ export const categoryNames = async (postIds: number[]) => {
   return names;
 };
 
-export const categories = () =>
+export const categories = cache(() =>
   rows<Category & { n: number }>(
     "SELECT c.id, c.name, c.parent, COUNT(pc.post_id) AS n FROM categories c LEFT JOIN post_categories pc ON pc.category_id = c.id GROUP BY c.id ORDER BY c.name",
-  );
+  ),
+);
 export const category = (id: number) => row<Category>("SELECT id, name, parent FROM categories WHERE id = ?", id);
 export const byCategory = (id: number) =>
   rows<PostCard>(`${LIST} JOIN post_categories pc ON pc.post_id = p.id WHERE pc.category_id = ? ORDER BY p.date DESC`, id);
@@ -104,6 +96,10 @@ export const inCategories = (catIds: number[], limit: number) =>
     ...catIds,
     limit,
   );
+
+// one query per group of categories, sent as a single batch (a database round trip per section would make the home page slow)
+export const inEach = async (groups: number[][], limit: number) =>
+  (await run(groups.map((g) => stmt(`${LIST} WHERE p.id IN (SELECT post_id FROM post_categories WHERE category_id IN (${g.map(() => "?").join(",")})) ORDER BY p.date DESC LIMIT ?`, ...g, limit)))).map((r) => r.results as PostCard[]);
 
 export const tags = (postId: number) =>
   rows<{ id: number; name: string }>("SELECT t.id, t.name FROM tags t JOIN post_tags pt ON pt.tag_id = t.id WHERE pt.post_id = ?", postId);

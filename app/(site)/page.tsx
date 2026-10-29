@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { permanentRedirect } from "next/navigation";
 import Thumb from "@/components/Thumb";
-import { categories, inCategories, latest, type PostCard } from "@/lib/db";
+import { categories, inEach, latest, type PostCard } from "@/lib/db";
 import { FOOTER_LINKS, SECTIONS, formatDate, type Tone } from "@/lib/site";
 
 // Tailwind needs whole class names, so each tone lists its classes in full
@@ -152,15 +152,16 @@ export default async function Home({ searchParams }: PageProps<"/">) {
   if (sp.feed) permanentRedirect("/feed.xml");
   if (typeof sp.s === "string" && sp.s) permanentRedirect(`/search?q=${encodeURIComponent(sp.s)}`);
 
-  const recent = await latest(0);
+  // three independent queries, run together (every round trip to D1 costs latency)
+  const [recent, cats, lists] = await Promise.all([latest(0), categories(), inEach(SECTIONS.map((s) => s.tabs), 20)]);
   const hero = [...recent.filter((p) => p.image), ...recent.filter((p) => !p.image)].slice(0, 4);
-  const names = new Map((await categories()).map((c) => [c.id, c.name]));
+  const names = new Map(cats.map((c) => [c.id, c.name]));
 
   // a post shows once on the page: each card skips posts the hero or an earlier card already used
   const used = new Set(hero.map((p) => p.id));
   const blocks = [];
-  for (const s of SECTIONS) {
-    const items = (await inCategories(s.tabs, 7 + used.size)).filter((p) => !used.has(p.id)).slice(0, s.layout === "split" ? 7 : 5);
+  for (const [i, s] of SECTIONS.entries()) {
+    const items = lists[i].filter((p) => !used.has(p.id)).slice(0, s.layout === "split" ? 7 : 5);
     items.forEach((p) => used.add(p.id));
     if (items.length) blocks.push(<Block key={s.title} {...s} names={names} items={items} />);
   }

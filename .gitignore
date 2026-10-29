@@ -45,3 +45,6 @@ next-env.d.ts
 .dev-uploads
 .wrangler
 .dev.vars
+
+# opennext build output
+.open-next
