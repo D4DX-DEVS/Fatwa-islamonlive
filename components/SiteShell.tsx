@@ -23,7 +23,7 @@ export default async function SiteShell({ children }: { children: React.ReactNod
       </div>
 
       <header className="geo bg-ivory">
-        <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-4">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-4 px-4 py-4">
           <Link href="/" className="rise shrink-0"><Image src="/logo.png" alt="Fatwa Islamonlive" width={300} height={99} priority className="h-11 w-auto min-[380px]:h-[52px] sm:h-[68px]" /></Link>
           <form action="/search" role="search" className="group/search rise relative ml-auto [--i:1] max-sm:min-w-0 max-sm:flex-1">
             <svg aria-hidden width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gold"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>

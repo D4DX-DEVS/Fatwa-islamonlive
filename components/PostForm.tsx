@@ -4,7 +4,7 @@ import DeleteButton from "@/components/DeleteButton";
 import { authors, categories, type Post } from "@/lib/db";
 
 const input = "mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-deep focus:ring-2 focus:ring-deep/20";
-const card = "rounded-xl border border-slate-200 bg-white p-4 shadow-sm";
+const card = "min-w-0 rounded-xl border border-slate-200 bg-white p-4 shadow-sm";
 const label = "block text-sm font-semibold text-slate-700";
 const ERRORS: Record<string, string> = {
   required: "Title and content are required.",
@@ -74,7 +74,7 @@ export default async function PostForm({ post, selected = [], error, saved }: { 
         </div>
       </form>
       {post && (
-        <div className="mt-6 flex items-center justify-between rounded-xl border border-red-100 bg-white p-4">
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-red-100 bg-white p-4">
           <p className="text-sm text-slate-500">Permanently remove this post and its image.</p>
           <DeleteButton action={remove.bind(null, post.id)} />
         </div>

@@ -45,15 +45,15 @@ export default async function Admin({ searchParams }: PageProps<"/admin">) {
       {posts.length ? (
         <ul className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200 bg-white">
           {posts.map((p) => (
-            <li key={p.id} className="flex items-center gap-4 px-4 py-3 hover:bg-slate-50">
-              <div className="min-w-0 flex-1 break-words">
+            <li key={p.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 hover:bg-slate-50">
+              <div className="min-w-0 basis-full break-words sm:flex-1 sm:basis-0">
                 <Link href={`/admin/${p.id}`} className="font-medium hover:text-deep">{p.title}</Link>
                 <p className="mt-0.5 text-xs text-slate-500">
                   {[p.date.slice(0, 10), p.author, cats.get(p.id)?.join(", ")].filter(Boolean).join(" · ")}
                 </p>
               </div>
-              <Link href={`/post/${p.id}`} target="_blank" className="shrink-0 text-sm text-slate-500 hover:text-slate-900">View ↗</Link>
-              <Link href={`/admin/${p.id}`} className="shrink-0 rounded-lg border border-slate-300 px-3 py-1 text-sm font-semibold hover:bg-white">Edit</Link>
+              <Link href={`/post/${p.id}`} target="_blank" className="shrink-0 py-2 text-sm text-slate-500 hover:text-slate-900">View ↗</Link>
+              <Link href={`/admin/${p.id}`} className="inline-flex min-h-10 shrink-0 items-center rounded-lg border border-slate-300 px-3 text-sm font-semibold hover:bg-white">Edit</Link>
             </li>
           ))}
         </ul>

@@ -83,7 +83,7 @@ export default async function Post({ params }: PageProps<"/post/[id]">) {
       <article>
         <header>
           {cats[0] && <p className="rise text-sm font-extrabold text-goldtext [--i:1]">{cats[0].name}</p>}
-          <h1 className="rise mt-3 text-[2rem] font-extrabold leading-[1.28] text-deep [--i:2] sm:text-[3.4rem] sm:leading-[1.2]">{p.title}</h1>
+          <h1 className="rise mt-3 [overflow-wrap:anywhere] text-[2rem] font-extrabold leading-[1.28] text-deep [--i:2] sm:text-[3.4rem] sm:leading-[1.2]">{p.title}</h1>
           <p className="rise mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-semibold [--i:3]">
             {p.author && <Link href={`/author/${p.author_id}`} className="inline-flex min-h-11 items-center rounded-full bg-deep px-4 font-bold text-champagne transition-colors hover:bg-gold hover:text-ink">{p.author}</Link>}
             <span aria-hidden className="h-px w-8 bg-gold" />
