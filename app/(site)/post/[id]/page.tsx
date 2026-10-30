@@ -71,7 +71,7 @@ export default async function Post({ params }: PageProps<"/post/[id]">) {
   const chip = "rounded-full px-4 py-1.5 text-sm font-bold transition-all duration-300";
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="mx-auto max-w-3xl lg:max-w-6xl">
       <JsonLd data={ld} />
       <div aria-hidden className="progress" />
       <nav aria-label="Breadcrumb" className="rise mb-6 flex flex-wrap items-center gap-x-3 text-sm font-semibold text-ink/70">
@@ -79,6 +79,7 @@ export default async function Post({ params }: PageProps<"/post/[id]">) {
         {cats[0] && <><span aria-hidden className="text-gold">◆</span><Link href={`/category/${cats[0].id}`} className="transition-colors hover:text-deep">{cats[0].name}</Link></>}
       </nav>
 
+      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_21rem] lg:items-start lg:gap-10">
       <article>
         <header>
           {cats[0] && <p className="rise text-sm font-extrabold text-goldtext [--i:1]">{cats[0].name}</p>}
@@ -108,13 +109,24 @@ export default async function Post({ params }: PageProps<"/post/[id]">) {
       </article>
 
       {related.length > 0 && (
-        <section className="mt-16">
-          <h2 className="mb-6 flex items-center gap-4 text-3xl font-extrabold text-deep">
+        <aside aria-labelledby="related" className="mt-16 lg:sticky lg:top-6 lg:mt-0">
+          <h2 id="related" className="mb-6 flex items-center gap-4 text-2xl font-extrabold text-deep sm:text-3xl lg:text-2xl">
             Related <span aria-hidden className="h-px flex-1 bg-gradient-to-r from-gold to-transparent" />
           </h2>
-          <PostList posts={related} />
-        </section>
+          {/* phones and tablets: the usual cards; wide screens: a compact column beside the article */}
+          <div className="lg:hidden"><PostList posts={related.slice(0, 4)} /></div>
+          <ul className="hidden space-y-4 lg:block">
+            {related.map((r) => (
+              <li key={r.id} className="reveal group zoom lift relative rounded-3xl border border-gold/30 bg-paper p-3">
+                <Thumb src={r.image} className="aspect-video w-full rounded-2xl" />
+                <Link href={`/post/${r.id}`} className="mt-3 line-clamp-3 px-1 text-lg font-extrabold leading-snug text-deep after:absolute after:inset-0"><span className="sweep">{r.title}</span></Link>
+                <p className="mt-2 px-1 text-xs font-bold uppercase tracking-wider text-goldtext">{formatDate(r.date)}</p>
+              </li>
+            ))}
+          </ul>
+        </aside>
       )}
+      </div>
     </div>
   );
 }

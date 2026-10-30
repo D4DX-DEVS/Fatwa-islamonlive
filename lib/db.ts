@@ -102,7 +102,7 @@ export const postBundle = cache(async (id: number) => {
       stmt("SELECT c.id, c.name, c.parent FROM categories c JOIN post_categories pc ON pc.category_id = c.id WHERE pc.post_id = ?", id),
       stmt("SELECT t.id, t.name FROM tags t JOIN post_tags pt ON pt.tag_id = t.id WHERE pt.post_id = ?", id),
       // related: newest other posts sharing a category
-      stmt(cards("WHERE p.id IN (SELECT post_id FROM post_categories WHERE category_id IN (SELECT category_id FROM post_categories WHERE post_id = ?)) AND p.id <> ?"), id, id, 4, 0),
+      stmt(cards("WHERE p.id IN (SELECT post_id FROM post_categories WHERE category_id IN (SELECT category_id FROM post_categories WHERE post_id = ?)) AND p.id <> ?"), id, id, 5, 0),
     ])
   ).map((x) => x.results);
   return { post: (p[0] as Post) ?? null, cats: c as Category[], tags: t as { id: number; name: string }[], related: r as PostCard[] };
