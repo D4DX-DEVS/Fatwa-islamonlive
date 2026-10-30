@@ -60,6 +60,10 @@ renders again the next time someone asks for it. A Cron Trigger (every 5 minutes
 - Never stored: `/admin`, form posts, search results, error pages, anything that sets a cookie.
 - If D1 fails (for example the daily limit) while a page renders, the old stored copy is served instead of an error.
 - Each page makes at most two database round trips (menu + page data); post, category, author and tag pages read only the rows they show.
+- The free plan cuts a request off at 10 ms of CPU, and a fresh render uses 35-800 ms (a stored page uses 3 ms). After a burst of fresh renders
+  several in a row can be cut off, which Cloudflare shows as a 503. So a render runs in a separate internal call (the Worker calling itself
+  through `WORKER_SELF_REFERENCE`, marked with a key derived from `ADMIN_PASSWORD`) that `worker.ts` retries up to 3 times with a pause.
+  Visitors mostly get stored pages; do not crawl the whole site quickly, it is a worse test than real traffic. Workers Paid ($5/month) removes the cut-off.
 - Links do not prefetch (`components/Link.tsx`): every prefetch would be a server request.
 - Clear the whole cache by hand: `npm run cf -- r2 object put fatwa/cache/purged --pipe --remote <<< "$(date +%s)000"`
   (any newer timestamp works).

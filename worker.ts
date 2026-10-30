@@ -38,6 +38,31 @@ async function purgedAt(env: Env, ctx: ExecutionContext): Promise<number> {
 const toBrowser = (body: BodyInit | null, type: string) =>
   new Response(body, { headers: { "content-type": type, "cache-control": "public, max-age=0, must-revalidate" } });
 
+// On the free plan a render may be cut off at 10 ms of CPU (about 1 in 7 fresh renders; stored pages use 3 ms). A cut-off ends the
+// whole invocation, so the render runs in a separate one (the Worker calling itself) that this wrapper can retry. Only calls
+// carrying the key, which is derived from a secret, skip the cache, so nobody outside can force renders.
+const renderKey = (env: Env) => (env.ADMIN_PASSWORD ? `render:${env.ADMIN_PASSWORD}` : null);
+
+async function render(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+  const key = renderKey(env);
+  const self = env.WORKER_SELF_REFERENCE;
+  if (!key || !self) return openNext.fetch(request, env, ctx);
+  const headers = new Headers(request.headers);
+  headers.set("x-render", key);
+  let last: Response | undefined;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      last = await self.fetch(new Request(request, { headers }));
+      if (last.status < 500) return last;
+    } catch (e) {
+      console.error("render attempt failed", attempt, e);
+    }
+    // after a burst of heavy renders the free plan cuts off several in a row; waiting costs no CPU and lets it recover
+    if (attempt < 2) await new Promise((done) => setTimeout(done, 400 * (attempt + 1)));
+  }
+  return last ?? openNext.fetch(request, env, ctx);
+}
+
 async function handle(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
   const url = new URL(request.url);
   const image = url.pathname.startsWith("/media/"); // uploaded images never change under one URL
@@ -72,7 +97,7 @@ async function handle(request: Request, env: Env, ctx: ExecutionContext): Promis
   // not stored (or out of date): render it
   let res: Response;
   try {
-    res = await openNext.fetch(request, env, ctx);
+    res = await render(request, env, ctx);
   } catch (e) {
     if (stale) return stale;
     throw e;
@@ -114,7 +139,11 @@ async function warm(env: Env, ctx: ExecutionContext) {
     const at = stored.get(`${PAGES}${path}`);
     if (at && valid(at, purged)) continue;
     left--;
-    await handle(new Request(`${base}${path}`), env, ctx);
+    try {
+      await handle(new Request(`${base}${path}`), env, ctx);
+    } catch (e) {
+      console.error("warm: page failed", path, e); // it stays unstored and the next run tries it again
+    }
   }
 }
 
@@ -134,6 +163,8 @@ async function route(request: Request, env: Env, ctx: ExecutionContext, url: URL
 
 const worker = {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+    const key = renderKey(env);
+    if (key && request.headers.get("x-render") === key) return openNext.fetch(request, env, ctx); // the internal render call
     const url = new URL(request.url);
     if (!offDomain(request, env, url)) return route(request, env, ctx, url);
     if (url.pathname === "/robots.txt") return new Response("User-agent: *\nDisallow: /\n", { headers: { "content-type": "text/plain; charset=utf-8" } });

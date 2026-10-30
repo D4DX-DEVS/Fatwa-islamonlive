@@ -21,6 +21,10 @@ async function local(stmts: Stmt[]): Promise<Result[]> {
       "CREATE INDEX IF NOT EXISTS pc_category ON post_categories(category_id)",
       "CREATE INDEX IF NOT EXISTS pt_tag ON post_tags(tag_id)",
       "CREATE INDEX IF NOT EXISTS posts_author ON posts(author_id, date DESC)",
+      "CREATE INDEX IF NOT EXISTS posts_slug ON posts(slug)",
+      "CREATE INDEX IF NOT EXISTS categories_slug ON categories(slug)",
+      "CREATE INDEX IF NOT EXISTS tags_slug ON tags(slug)",
+      "CREATE INDEX IF NOT EXISTS authors_slug ON authors(slug)",
     ]) sqlite.exec(sql);
   }
   const db = sqlite;
