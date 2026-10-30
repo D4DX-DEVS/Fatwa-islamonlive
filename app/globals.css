@@ -92,18 +92,18 @@ a:hover > .sweep, .sweep:hover, .group:hover .sweep { background-size: 100% 2px;
 }
 
 /* ---- article body (HTML imported from WordPress) ---- */
-.prose-content { font-family: var(--font-notoserif), ui-serif, Georgia, serif; font-size: 1.1875rem; line-height: 2.05; color: #1c2b26; overflow-wrap: anywhere; }
+.prose-content { font-family: var(--font-notoserif), ui-serif, Georgia, serif; font-size: 1.0625rem; line-height: 1.95; color: #1c2b26; overflow-wrap: anywhere; }
 .prose-content p, .prose-content ul, .prose-content ol { margin-bottom: 1.2rem; }
 .prose-content ul { list-style: disc; padding-inline-start: 1.5rem; }
 .prose-content ol { list-style: decimal; padding-inline-start: 1.5rem; }
 .prose-content li::marker { color: var(--color-gold); }
 .prose-content h2, .prose-content h3, .prose-content h4 { font-family: var(--font-anek), ui-sans-serif, system-ui, sans-serif; font-weight: 800; line-height: 1.45; margin: 2.2rem 0 .7rem; color: var(--color-deep); }
-.prose-content h2 { font-size: 1.6rem; }
-.prose-content h3 { font-size: 1.35rem; }
+.prose-content h2 { font-size: 1.4rem; }
+.prose-content h3 { font-size: 1.2rem; }
 .prose-content strong { color: var(--color-ink); font-weight: 700; }
 /* the question a fatwa answers: first paragraph when it is wholly italic */
 .prose-content > p:first-child:has(> em:only-child) {
-  font-size: 1.1rem; padding: 1.2rem 1.4rem; margin-bottom: 1.8rem; border-radius: 1.25rem;
+  font-size: 1rem; padding: 1.2rem 1.4rem; margin-bottom: 1.8rem; border-radius: 1.25rem;
   background: linear-gradient(135deg, var(--color-sand), var(--color-ivory)); border: 1px solid rgb(201 162 75 / .45);
   border-inline-start: 5px solid var(--color-gold);
 }

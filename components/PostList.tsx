@@ -12,7 +12,7 @@ export default function PostList({ posts }: { posts: PostCard[] }) {
           <Thumb src={p.image} className="h-24 w-28 shrink-0 rounded-2xl sm:h-36 sm:w-52" />
           <div className="min-w-0 self-center break-words">
             {/* the title link stretches over the whole card */}
-            <Link href={`/post/${p.id}`} className="line-clamp-2 text-lg font-extrabold leading-snug text-deep after:absolute after:inset-0 sm:text-2xl sm:leading-snug"><span className="sweep">{p.title}</span></Link>
+            <Link href={`/post/${p.id}`} className="line-clamp-2 text-base font-extrabold leading-snug text-deep after:absolute after:inset-0 sm:text-xl sm:leading-snug"><span className="sweep">{p.title}</span></Link>
             {p.excerpt && <p className="mt-2 line-clamp-2 font-serif text-[15px] leading-relaxed text-ink/70 max-sm:hidden">{p.excerpt}</p>}
             <p className="mt-3 flex flex-wrap items-center gap-x-2 text-xs font-bold uppercase tracking-wider text-goldtext">
               {p.author && <><span className="normal-case tracking-normal text-jade">{p.author}</span><span aria-hidden>◆</span></>}

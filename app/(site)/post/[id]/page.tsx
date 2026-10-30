@@ -83,7 +83,7 @@ export default async function Post({ params }: PageProps<"/post/[id]">) {
       <article>
         <header>
           {cats[0] && <p className="rise text-sm font-extrabold text-goldtext [--i:1]">{cats[0].name}</p>}
-          <h1 className="rise mt-3 [overflow-wrap:anywhere] text-[2rem] font-extrabold leading-[1.28] text-deep [--i:2] sm:text-[3.4rem] sm:leading-[1.2]">{p.title}</h1>
+          <h1 className="rise mt-3 [overflow-wrap:anywhere] text-[1.625rem] font-extrabold leading-[1.3] text-deep [--i:2] sm:text-[2.25rem] sm:leading-[1.25]">{p.title}</h1>
           <p className="rise mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-semibold [--i:3]">
             {p.author && <Link href={`/author/${p.author_id}`} className="inline-flex min-h-11 items-center rounded-full bg-deep px-4 font-bold text-champagne transition-colors hover:bg-gold hover:text-ink">{p.author}</Link>}
             <span aria-hidden className="h-px w-8 bg-gold" />
@@ -110,7 +110,7 @@ export default async function Post({ params }: PageProps<"/post/[id]">) {
 
       {related.length > 0 && (
         <aside aria-labelledby="related" className="mt-16 lg:sticky lg:top-6 lg:mt-0">
-          <h2 id="related" className="mb-6 flex items-center gap-4 text-2xl font-extrabold text-deep sm:text-3xl lg:text-2xl">
+          <h2 id="related" className="mb-6 flex items-center gap-4 text-xl font-extrabold text-deep sm:text-2xl lg:text-xl">
             Related <span aria-hidden className="h-px flex-1 bg-gradient-to-r from-gold to-transparent" />
           </h2>
           {/* phones and tablets: the usual cards; wide screens: a compact column beside the article */}
@@ -119,7 +119,7 @@ export default async function Post({ params }: PageProps<"/post/[id]">) {
             {related.map((r) => (
               <li key={r.id} className="reveal group zoom lift relative rounded-3xl border border-gold/30 bg-paper p-3">
                 <Thumb src={r.image} className="aspect-video w-full rounded-2xl" />
-                <Link href={`/post/${r.id}`} className="mt-3 line-clamp-3 px-1 text-lg font-extrabold leading-snug text-deep after:absolute after:inset-0"><span className="sweep">{r.title}</span></Link>
+                <Link href={`/post/${r.id}`} className="mt-3 line-clamp-3 px-1 text-base font-extrabold leading-snug text-deep after:absolute after:inset-0"><span className="sweep">{r.title}</span></Link>
                 <p className="mt-2 px-1 text-xs font-bold uppercase tracking-wider text-goldtext">{formatDate(r.date)}</p>
               </li>
             ))}

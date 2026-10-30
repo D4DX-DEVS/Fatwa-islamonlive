@@ -55,7 +55,7 @@ export default async function SiteShell({ children }: { children: React.ReactNod
 
       <footer className="geo mt-16 border-t-4 border-gold bg-deep text-ivory/80">
         <div className="mx-auto max-w-7xl px-4 pb-8 pt-14">
-          <p className="max-w-3xl text-3xl font-extrabold leading-snug text-ivory sm:text-5xl sm:leading-tight">
+          <p className="max-w-3xl text-2xl font-extrabold leading-snug text-ivory sm:text-3xl sm:leading-tight">
             The one and only comprehensive <span className="text-gold">Fatwa</span> portal in Malayalam.
           </p>
           <div className="mt-12 grid grid-cols-1 gap-10 md:grid-cols-[1fr_1.6fr]">

@@ -26,7 +26,7 @@ function Hero({ posts }: { posts: PostCard[] }) {
         <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-ink via-ink/55 to-ink/5" />
         <span className="absolute inset-x-0 bottom-0 p-6 sm:p-10">
           <span className="rise inline-block rounded-full bg-gold px-4 py-1 text-xs font-extrabold uppercase tracking-[0.25em] text-ink">Featured</span>
-          <span className="rise mt-5 block text-[1.75rem] font-extrabold leading-[1.3] text-ivory [--i:2] sm:text-[3.25rem] sm:leading-[1.22]"><span className="sweep">{main.title}</span></span>
+          <span className="rise mt-5 block text-[1.5rem] font-extrabold leading-[1.3] text-ivory [--i:2] sm:text-[2.25rem] sm:leading-[1.25]"><span className="sweep">{main.title}</span></span>
           <span className="rise mt-5 flex items-center gap-4 text-sm font-semibold text-champagne [--i:3]">
             {main.author && <span>{main.author}</span>}
             <span aria-hidden className="h-px w-10 bg-gold" />
@@ -54,7 +54,7 @@ function Hero({ posts }: { posts: PostCard[] }) {
         </div>
         <a href={SUPPORT} className="sheen rise group flex flex-1 items-center justify-between gap-4 rounded-[2rem] bg-gradient-to-br from-gold via-champagne to-gold p-6 text-ink shadow-xl shadow-gold/30 transition-transform duration-500 hover:-translate-y-1 [--i:3] sm:p-7">
           <span>
-            <span className="block text-3xl font-extrabold leading-tight">Support Us</span>
+            <span className="block text-2xl font-extrabold leading-tight">Support Us</span>
             <span className="mt-1 block text-sm font-semibold text-ink/70">Help keep this portal free for everyone.</span>
           </span>
           <span aria-hidden className="grid size-12 shrink-0 place-items-center rounded-full bg-ink text-xl text-gold transition-transform duration-500 group-hover:translate-x-1.5">→</span>
@@ -129,7 +129,7 @@ function Block({ title, tabs, tone, layout = "card", span = 1, names, items, n }
         <Link href={`/post/${lead.id}`} className={`group zoom relative block aspect-video overflow-hidden rounded-2xl ${span === 3 ? "sm:aspect-[3/1]" : "sm:aspect-[5/2]"}`}>
           <Thumb src={lead.image} className="absolute inset-0 h-full w-full" />
           <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/25 to-transparent" />
-          <span className="absolute inset-x-0 bottom-0 p-5 text-xl font-extrabold leading-snug text-ivory sm:p-6 sm:text-2xl"><span className="sweep">{lead.title}</span></span>
+          <span className="absolute inset-x-0 bottom-0 p-5 text-lg font-extrabold leading-snug text-ivory sm:p-6 sm:text-xl"><span className="sweep">{lead.title}</span></span>
         </Link>
         <ul className="mt-6 grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2">{rest.map((p, i) => <Row key={p.id} p={p} n={i + 1} theme={t} />)}</ul>
       </section>
