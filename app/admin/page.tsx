@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import Link from "@/components/Link";
 import { isAdmin } from "@/lib/auth";
-import { PAGE_SIZE, categoryNames, countAll, latest, search } from "@/lib/db";
-import { login } from "./actions";
+import DeleteButton from "@/components/DeleteButton";
+import { PAGE_SIZE, categories, categoryNames, categoryPage, countAll, latest, search } from "@/lib/db";
+import { login, remove } from "./actions";
 
 export const metadata: Metadata = { title: "Admin", robots: { index: false } };
 
+const ctl = "rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-deep focus:ring-2 focus:ring-deep/20";
 const field = "w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-deep focus:ring-2 focus:ring-deep/20";
 
 export default async function Admin({ searchParams }: PageProps<"/admin">) {
@@ -24,48 +26,75 @@ export default async function Admin({ searchParams }: PageProps<"/admin">) {
     );
   }
   const q = typeof sp.q === "string" ? sp.q.trim() : "";
-  const total = await countAll();
+  const cat = Math.trunc(Number(sp.cat)) || 0;
+  const cats = await categories();
+  const filtered = cat ? await categoryPage(cat, 0) : null;
+  const total = filtered ? filtered.total : await countAll();
   const last = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const page = Math.min(last, Math.max(1, Math.trunc(Number(sp.page)) || 1));
-  const posts = await (q ? search(q) : latest((page - 1) * PAGE_SIZE));
-  const cats = await categoryNames(posts.map((p) => p.id));
+  const posts = q ? await search(q) : cat ? (await categoryPage(cat, (page - 1) * PAGE_SIZE)).posts : await latest((page - 1) * PAGE_SIZE);
+  const names = await categoryNames(posts.map((p) => p.id));
+  const href = (n: number) => `/admin?${new URLSearchParams({ ...(cat && { cat: String(cat) }), page: String(n) })}`;
+  const btn = "inline-flex min-h-10 shrink-0 items-center rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold hover:bg-slate-100";
   return (
-    <>
+    <div className="mx-auto max-w-6xl">
       <div className="mb-5 flex flex-wrap items-center gap-3">
         <h1 className="text-2xl font-bold">Posts</h1>
-        <span className="rounded-full bg-slate-200 px-2.5 py-0.5 text-xs font-semibold text-slate-600">{total}</span>
-        <Link href="/admin/new" className="ml-auto rounded-lg bg-deep px-4 py-2 text-sm font-semibold text-white hover:bg-jade">+ New post</Link>
+        <span className="text-slate-500">({total})</span>
+        <Link href="/admin/new" className="ml-auto inline-flex min-h-11 items-center rounded-lg border border-deep px-4 text-sm font-semibold text-deep hover:bg-deep hover:text-white">+ New post</Link>
       </div>
-      <form className="mb-4 flex gap-2">
-        <input name="q" defaultValue={q} placeholder="Search posts by title or text…" aria-label="Search posts" className={field} />
-        <button className="shrink-0 rounded-lg border border-slate-300 bg-white px-4 text-sm font-semibold hover:bg-slate-100">Search</button>
-        {q && <Link href="/admin" className="flex shrink-0 items-center px-2 text-sm text-slate-500 hover:text-slate-900">Clear</Link>}
+      <form className="mb-4 flex flex-wrap gap-2">
+        <input name="q" defaultValue={q} placeholder="Search title or text…" aria-label="Search posts" className={`${ctl} min-h-10 min-w-0 flex-1 basis-56 sm:flex-none sm:basis-72`} />
+        <select name="cat" defaultValue={cat || ""} aria-label="Category" className={`${ctl} min-h-10 max-w-full`}>
+          <option value="">All categories</option>
+          {cats.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+        </select>
+        <button className={btn}>Filter</button>
+        {(q || cat > 0) && <Link href="/admin" className="flex min-h-10 shrink-0 items-center px-2 text-sm text-slate-500 hover:text-slate-900">Clear</Link>}
       </form>
-      <p className="mb-2 text-sm text-slate-500">{q ? `${posts.length} result${posts.length === 1 ? "" : "s"} for “${q}”` : `Page ${page} of ${last}`}</p>
       {posts.length ? (
-        <ul className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200 bg-white">
-          {posts.map((p) => (
-            <li key={p.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 hover:bg-slate-50">
-              <div className="min-w-0 basis-full break-words sm:flex-1 sm:basis-0">
-                <Link href={`/admin/${p.id}`} className="font-medium hover:text-deep">{p.title}</Link>
-                <p className="mt-0.5 text-xs text-slate-500">
-                  {[p.date.slice(0, 10), p.author, cats.get(p.id)?.join(", ")].filter(Boolean).join(" · ")}
-                </p>
-              </div>
-              <Link href={`/post/${p.id}`} target="_blank" className="shrink-0 py-2 text-sm text-slate-500 hover:text-slate-900">View ↗</Link>
-              <Link href={`/admin/${p.id}`} className="inline-flex min-h-10 shrink-0 items-center rounded-lg border border-slate-300 px-3 text-sm font-semibold hover:bg-white">Edit</Link>
-            </li>
-          ))}
-        </ul>
+        <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+          <table className="w-full text-left max-md:block">
+            <thead className="bg-slate-50 text-sm text-slate-500 max-md:hidden">
+              <tr>
+                <th className="px-4 py-3 font-semibold">Title</th>
+                <th className="hidden px-4 py-3 font-semibold md:table-cell">Category</th>
+                <th className="hidden px-4 py-3 font-semibold md:table-cell">Date</th>
+                <th className="px-4 py-3"><span className="sr-only">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 max-md:block">
+              {posts.map((p) => (
+                <tr key={p.id} className="align-middle hover:bg-slate-50 max-md:block">
+                  <td className="px-4 py-3 max-md:block max-md:pb-1 md:w-[46%] md:max-w-0">
+                    <Link href={`/admin/${p.id}`} className="line-clamp-2 break-words font-medium hover:text-deep">{p.title}</Link>
+                    <p className="mt-0.5 text-xs text-slate-500 md:hidden">{[p.date.slice(0, 10), names.get(p.id)?.join(", ")].filter(Boolean).join(" · ")}</p>
+                  </td>
+                  <td className="hidden px-4 py-3 text-sm text-slate-600 md:table-cell">{names.get(p.id)?.join(", ")}</td>
+                  <td className="hidden whitespace-nowrap px-4 py-3 text-sm text-slate-600 md:table-cell">{p.date.slice(0, 10)}</td>
+                  <td className="px-4 py-3 max-md:block max-md:pt-1">
+                    <div className="flex flex-wrap gap-2 md:justify-end">
+                      <Link href={`/admin/${p.id}`} className={btn}>Edit</Link>
+                      <Link href={`/post/${p.id}`} target="_blank" className={btn}>View</Link>
+                      <DeleteButton action={remove.bind(null, p.id)} label="Delete" />
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       ) : (
         <p className="rounded-xl border border-dashed border-slate-300 bg-white px-4 py-10 text-center text-slate-500">No posts found.</p>
       )}
       {!q && last > 1 && (
-        <div className="mt-4 flex items-center justify-between text-sm">
-          {page > 1 ? <Link href={`/admin?page=${page - 1}`} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 font-semibold hover:bg-slate-100">← Newer</Link> : <span />}
-          {page < last ? <Link href={`/admin?page=${page + 1}`} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 font-semibold hover:bg-slate-100">Older →</Link> : <span />}
+        <div className="mt-4 flex items-center justify-between gap-3 text-sm">
+          {page > 1 ? <Link href={href(page - 1)} className={btn}>← Newer</Link> : <span />}
+          <span className="text-slate-500">Page {page} of {last}</span>
+          {page < last ? <Link href={href(page + 1)} className={btn}>Older →</Link> : <span />}
         </div>
       )}
-    </>
+      {q && <p className="mt-3 text-sm text-slate-500">{posts.length} result{posts.length === 1 ? "" : "s"} for “{q}”</p>}
+    </div>
   );
 }
