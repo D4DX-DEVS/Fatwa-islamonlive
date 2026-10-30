@@ -85,7 +85,7 @@ Possible keyword cannibalisation: 3 pairs of posts share an identical title (`/p
 ## Remaining issues and risks
 
 - Real domain not yet live: canonical URLs, the sitemap, Open Graph and JSON-LD all point at `https://fatwa.islamonlive.in`.
-- **Needs approval, not done:** `noindex, follow` for tag pages with fewer than 3 posts, and for tags that duplicate an author. They are not in the sitemap, so the effect is small, but it changes indexing.
+- Tag pages with fewer than 3 posts (145 of 162) are `noindex, follow` (approved); they were never in the sitemap. Tags that share a name with an author (4) are still indexable: not yet decided.
 - Redirect chains from old URLs with a trailing slash take two hops (strip the slash, then the redirect). Search engines follow this; a single hop would need a middleware change.
 - Old WordPress image sizes (`name-300x200.jpg`) and old date archives were not migrated and still 404.
 - Images are served as uploaded (no resizing): fine at the current 18-57 KB for the main ones, but no responsive `srcset`.

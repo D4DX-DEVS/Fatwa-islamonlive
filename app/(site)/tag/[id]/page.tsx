@@ -6,6 +6,8 @@ import PostList from "@/components/PostList";
 import { pageMeta } from "@/lib/seo";
 import { PAGE_SIZE, tagPage, idBySlug } from "@/lib/db";
 
+const MIN_INDEXED = 3;
+
 const href = (id: number) => (n: number) => (n === 1 ? `/tag/${id}` : `/tag/${id}?page=${n}`);
 
 // the page and its metadata share one cached database call
@@ -26,11 +28,15 @@ export async function generateMetadata(props: PageProps<"/tag/[id]">): Promise<M
   if (!data?.head) return {};
   const name = data.head.name;
   const page = n > 1 ? ` – page ${n}` : "";
-  return pageMeta({
-    title: `#${name}${page}`,
-    description: `Fatwas tagged ${name} on Fatwa Islamonlive (${data.total} posts).${n > 1 ? ` Page ${n}.` : ""}`,
-    path: href(id)(n || 1),
-  });
+  return {
+    ...pageMeta({
+      title: `#${name}${page}`,
+      description: `Fatwas tagged ${name} on Fatwa Islamonlive (${data.total} posts).${n > 1 ? ` Page ${n}.` : ""}`,
+      path: href(id)(n || 1),
+    }),
+    // a tag with one or two posts is a near-empty page: keep it out of search results, still let crawlers follow its links
+    ...(data.total < MIN_INDEXED && { robots: { index: false, follow: true } }),
+  };
 }
 
 export default async function Tag(props: PageProps<"/tag/[id]">) {
