@@ -68,15 +68,15 @@ export default async function Post({ params }: PageProps<"/post/[id]">) {
       },
     ],
   };
-  const chip = "rounded-full px-4 py-1.5 text-sm font-bold transition-all duration-300";
+  const chip = "inline-flex min-h-11 min-w-11 items-center justify-center rounded-full px-4 text-sm font-bold transition-all duration-300";
 
   return (
     <div className="mx-auto max-w-3xl lg:max-w-6xl">
       <JsonLd data={ld} />
       <div aria-hidden className="progress" />
-      <nav aria-label="Breadcrumb" className="rise mb-6 flex flex-wrap items-center gap-x-3 text-sm font-semibold text-ink/70">
-        <Link href="/" className="transition-colors hover:text-deep">ഹോം</Link>
-        {cats[0] && <><span aria-hidden className="text-gold">◆</span><Link href={`/category/${cats[0].id}`} className="transition-colors hover:text-deep">{cats[0].name}</Link></>}
+      <nav aria-label="Breadcrumb" className="rise mb-3 flex flex-wrap items-center gap-x-3 text-sm font-semibold text-ink/70">
+        <Link href="/" className="inline-block min-w-11 py-3 transition-colors hover:text-deep">ഹോം</Link>
+        {cats[0] && <><span aria-hidden className="text-gold">◆</span><Link href={`/category/${cats[0].id}`} className="inline-block py-3 transition-colors hover:text-deep">{cats[0].name}</Link></>}
       </nav>
 
       <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_21rem] lg:items-start lg:gap-10">
@@ -85,7 +85,7 @@ export default async function Post({ params }: PageProps<"/post/[id]">) {
           {cats[0] && <p className="rise text-sm font-extrabold text-goldtext [--i:1]">{cats[0].name}</p>}
           <h1 className="rise mt-3 text-[2rem] font-extrabold leading-[1.28] text-deep [--i:2] sm:text-[3.4rem] sm:leading-[1.2]">{p.title}</h1>
           <p className="rise mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-semibold [--i:3]">
-            {p.author && <Link href={`/author/${p.author_id}`} className="rounded-full bg-deep px-4 py-1.5 font-bold text-champagne transition-colors hover:bg-gold hover:text-ink">{p.author}</Link>}
+            {p.author && <Link href={`/author/${p.author_id}`} className="inline-flex min-h-11 items-center rounded-full bg-deep px-4 font-bold text-champagne transition-colors hover:bg-gold hover:text-ink">{p.author}</Link>}
             <span aria-hidden className="h-px w-8 bg-gold" />
             <time dateTime={p.date.slice(0, 10)} className="text-ink/70">{formatDate(p.date)}</time>
           </p>
@@ -102,7 +102,7 @@ export default async function Post({ params }: PageProps<"/post/[id]">) {
             </p>
           )}
           <div className="mt-6 flex flex-wrap items-center gap-2.5 text-sm">
-            <span className="mr-1 text-[11px] font-extrabold uppercase tracking-[0.25em] text-goldtext">Share</span>
+            <span className="mr-1 text-xs font-extrabold uppercase tracking-[0.25em] text-goldtext">Share</span>
             {share.map((s) => <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" className={`${chip} sheen bg-ink text-champagne hover:-translate-y-0.5 hover:bg-deep`}>{s.label}</a>)}
           </div>
         </div>

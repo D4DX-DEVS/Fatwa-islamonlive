@@ -13,11 +13,11 @@ export default async function SiteShell({ children }: { children: React.ReactNod
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded-lg focus:bg-gold focus:px-4 focus:py-2 focus:font-bold focus:text-ink focus:shadow-lg">Skip to content</a>
 
       <div className="bg-ink text-champagne/80">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em]">
-          <p className="truncate">The comprehensive fatwa portal in Malayalam</p>
-          <p className="flex shrink-0 gap-5">
-            <a href={FOOTER_LINKS[0].href} className="transition-colors hover:text-gold">Support us</a>
-            <Link href="/feed.xml" className="max-sm:hidden transition-colors hover:text-gold">RSS</Link>
+        <div className="mx-auto flex min-h-11 max-w-7xl items-center justify-between gap-4 px-4 text-xs font-semibold uppercase tracking-[0.2em]">
+          <p className="truncate"><span className="sm:hidden">Malayalam fatwa portal</span><span className="max-sm:hidden">The comprehensive fatwa portal in Malayalam</span></p>
+          <p className="flex shrink-0 gap-3">
+            <a href={FOOTER_LINKS[0].href} className="flex min-h-11 items-center px-2 transition-colors hover:text-gold">Support us</a>
+            <Link href="/feed.xml" className="flex min-h-11 items-center px-2 max-sm:hidden transition-colors hover:text-gold">RSS</Link>
           </p>
         </div>
       </div>
@@ -36,13 +36,13 @@ export default async function SiteShell({ children }: { children: React.ReactNod
       <Nav names={names} />
 
       <div className="border-b border-gold/40 bg-ink text-ivory">
-        <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-2.5 text-sm">
-          <span className="sheen pulse flex shrink-0 items-center gap-2 rounded-full bg-gold px-3.5 py-1 text-[11px] font-extrabold uppercase tracking-[0.2em] text-ink">Latest</span>
+        <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 text-sm">
+          <span className="sheen pulse flex shrink-0 items-center gap-2 rounded-full bg-gold px-3.5 py-1 text-xs font-extrabold uppercase tracking-[0.2em] text-ink">Latest</span>
           <div className="relative min-w-0 flex-1 overflow-hidden [mask-image:linear-gradient(90deg,transparent,#000_4%,#000_96%,transparent)]">
             {/* the list twice, scrolled by half its width, loops without a jump; the copy is hidden from screen readers */}
             <div className="marquee flex w-max whitespace-nowrap">
               {[...ticker, ...ticker].map((p, i) => (
-                <Link key={i} href={`/post/${p.id}`} aria-hidden={i >= ticker.length || undefined} tabIndex={i >= ticker.length ? -1 : undefined} className="pr-12 font-medium transition-colors hover:text-gold">
+                <Link key={i} href={`/post/${p.id}`} aria-hidden={i >= ticker.length || undefined} tabIndex={i >= ticker.length ? -1 : undefined} className="py-3 pr-12 font-medium transition-colors hover:text-gold">
                   <span aria-hidden className="mr-3 text-gold">◆</span>{p.title}
                 </Link>
               ))}
@@ -62,19 +62,19 @@ export default async function SiteShell({ children }: { children: React.ReactNod
             <div>
               <span className="inline-block rounded-2xl bg-ivory p-3.5"><Image src="/islamonlive-logo.png" alt="Islamonlive" width={298} height={81} className="h-11 w-auto" /></span>
               <nav aria-label="Footer" className="mt-8">
-                <h2 className="mb-4 text-[11px] font-extrabold uppercase tracking-[0.25em] text-gold">Links</h2>
-                <ul className="space-y-2.5 text-sm font-semibold">
-                  {FOOTER_LINKS.map((l) => <li key={l.href}><a href={l.href} className="transition-colors hover:text-gold"><span className="sweep">{l.label}</span></a></li>)}
-                  <li><Link href="/feed.xml" className="transition-colors hover:text-gold"><span className="sweep">RSS</span></Link></li>
-                  <li><Link href="/admin" className="text-ivory/65 transition-colors hover:text-gold">Admin</Link></li>
+                <h2 className="mb-4 text-xs font-extrabold uppercase tracking-[0.25em] text-gold">Links</h2>
+                <ul className="text-sm font-semibold">
+                  {FOOTER_LINKS.map((l) => <li key={l.href}><a href={l.href} className="inline-block min-h-11 min-w-11 py-3 transition-colors hover:text-gold"><span className="sweep">{l.label}</span></a></li>)}
+                  <li><Link href="/feed.xml" className="inline-block min-h-11 min-w-11 py-3 transition-colors hover:text-gold"><span className="sweep">RSS</span></Link></li>
+                  <li><Link href="/admin" className="inline-block min-h-11 min-w-11 py-3 text-ivory/65 transition-colors hover:text-gold">Admin</Link></li>
                 </ul>
               </nav>
             </div>
             <div>
-              <h2 className="mb-4 text-[11px] font-extrabold uppercase tracking-[0.25em] text-gold">Categories</h2>
+              <h2 className="mb-4 text-xs font-extrabold uppercase tracking-[0.25em] text-gold">Categories</h2>
               <p className="flex flex-wrap gap-2 text-[13px] font-semibold">
                 {all.filter((c) => c.n > 0).map((c) => (
-                  <Link key={c.id} href={`/category/${c.id}`} className="rounded-full border border-gold/40 px-3.5 py-1 text-champagne transition-all duration-300 hover:-translate-y-0.5 hover:border-gold hover:bg-gold hover:text-ink">{c.name}</Link>
+                  <Link key={c.id} href={`/category/${c.id}`} className="inline-flex min-h-11 items-center rounded-full border border-gold/40 px-3.5 text-champagne transition-all duration-300 hover:-translate-y-0.5 hover:border-gold hover:bg-gold hover:text-ink">{c.name}</Link>
                 ))}
               </p>
             </div>

@@ -6,7 +6,7 @@ import { login } from "./actions";
 
 export const metadata: Metadata = { title: "Admin", robots: { index: false } };
 
-const field = "w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-[#2d7c26] focus:ring-2 focus:ring-[#2d7c26]/20";
+const field = "w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-deep focus:ring-2 focus:ring-deep/20";
 
 export default async function Admin({ searchParams }: PageProps<"/admin">) {
   const sp = await searchParams;
@@ -19,7 +19,7 @@ export default async function Admin({ searchParams }: PageProps<"/admin">) {
         </div>
         {sp.error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">Wrong password. Try again.</p>}
         <input name="password" type="password" placeholder="Password" aria-label="Password" required autoFocus className={field} />
-        <button className="w-full rounded-lg bg-[#2d7c26] px-4 py-2 font-semibold text-white hover:bg-[#256620]">Sign in</button>
+        <button className="w-full rounded-lg bg-deep px-4 py-2 font-semibold text-white hover:bg-jade">Sign in</button>
       </form>
     );
   }
@@ -34,7 +34,7 @@ export default async function Admin({ searchParams }: PageProps<"/admin">) {
       <div className="mb-5 flex flex-wrap items-center gap-3">
         <h1 className="text-2xl font-bold">Posts</h1>
         <span className="rounded-full bg-slate-200 px-2.5 py-0.5 text-xs font-semibold text-slate-600">{total}</span>
-        <Link href="/admin/new" className="ml-auto rounded-lg bg-[#2d7c26] px-4 py-2 text-sm font-semibold text-white hover:bg-[#256620]">+ New post</Link>
+        <Link href="/admin/new" className="ml-auto rounded-lg bg-deep px-4 py-2 text-sm font-semibold text-white hover:bg-jade">+ New post</Link>
       </div>
       <form className="mb-4 flex gap-2">
         <input name="q" defaultValue={q} placeholder="Search posts by title or text…" aria-label="Search posts" className={field} />
@@ -47,7 +47,7 @@ export default async function Admin({ searchParams }: PageProps<"/admin">) {
           {posts.map((p) => (
             <li key={p.id} className="flex items-center gap-4 px-4 py-3 hover:bg-slate-50">
               <div className="min-w-0 flex-1 break-words">
-                <Link href={`/admin/${p.id}`} className="font-medium hover:text-[#2d7c26]">{p.title}</Link>
+                <Link href={`/admin/${p.id}`} className="font-medium hover:text-deep">{p.title}</Link>
                 <p className="mt-0.5 text-xs text-slate-500">
                   {[p.date.slice(0, 10), p.author, cats.get(p.id)?.join(", ")].filter(Boolean).join(" · ")}
                 </p>

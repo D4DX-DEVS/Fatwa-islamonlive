@@ -25,7 +25,7 @@ function Hero({ posts }: { posts: PostCard[] }) {
         <Thumb src={main.image} priority className="absolute inset-0 h-full w-full" />
         <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-ink via-ink/55 to-ink/5" />
         <span className="absolute inset-x-0 bottom-0 p-6 sm:p-10">
-          <span className="rise inline-block rounded-full bg-gold px-4 py-1 text-[11px] font-extrabold uppercase tracking-[0.25em] text-ink">Featured</span>
+          <span className="rise inline-block rounded-full bg-gold px-4 py-1 text-xs font-extrabold uppercase tracking-[0.25em] text-ink">Featured</span>
           <span className="rise mt-5 block text-[1.75rem] font-extrabold leading-[1.3] text-ivory [--i:2] sm:text-[3.25rem] sm:leading-[1.22]"><span className="sweep">{main.title}</span></span>
           <span className="rise mt-5 flex items-center gap-4 text-sm font-semibold text-champagne [--i:3]">
             {main.author && <span>{main.author}</span>}
@@ -37,7 +37,7 @@ function Hero({ posts }: { posts: PostCard[] }) {
 
       <div className="flex flex-col gap-5">
         <div className="geo rise rounded-[2rem] border border-gold/40 bg-deep p-6 text-ivory shadow-xl shadow-deep/20 [--i:2] sm:p-7">
-          <h2 className="text-[11px] font-extrabold uppercase tracking-[0.3em] text-gold">Latest fatwas</h2>
+          <h2 className="text-xs font-extrabold uppercase tracking-[0.3em] text-gold">Latest fatwas</h2>
           <ul className="mt-2 divide-y divide-white/10">
             {side.map((p, i) => (
               <li key={p.id}>
@@ -68,7 +68,7 @@ function Pills({ tabs, names, theme }: { tabs: number[]; names: Map<number, stri
   if (tabs.length < 2) return null;
   return (
     <p className="flex flex-wrap gap-1.5 text-xs font-bold">
-      {tabs.map((id) => <Link key={id} href={`/category/${id}`} className={`rounded-full px-3 py-1 transition-colors duration-300 ${theme.pill}`}>{names.get(id)}</Link>)}
+      {tabs.map((id) => <Link key={id} href={`/category/${id}`} className={`inline-flex min-h-11 items-center rounded-full px-3.5 transition-colors duration-300 ${theme.pill}`}>{names.get(id)}</Link>)}
     </p>
   );
 }
@@ -114,7 +114,7 @@ function Block({ title, tabs, tone, layout = "card", span = 1, names, items, n }
         <div>
           <Link href={`/post/${lead.id}`} className="block text-[1.7rem] font-extrabold leading-snug text-ivory"><span className="sweep">{lead.title}</span></Link>
           <ul className="mt-4 space-y-2 text-sm font-semibold text-ivory/80">
-            {rest.slice(0, 2).map((p) => <li key={p.id}><Link href={`/post/${p.id}`} className="line-clamp-1 transition-colors hover:text-gold"><span className="mr-2 text-gold">◆</span>{p.title}</Link></li>)}
+            {rest.slice(0, 2).map((p) => <li key={p.id}><Link href={`/post/${p.id}`} className="block py-3 transition-colors hover:text-gold"><span className="line-clamp-1"><span className="mr-2 text-gold">◆</span>{p.title}</span></Link></li>)}
           </ul>
         </div>
       </section>

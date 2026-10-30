@@ -3,7 +3,7 @@ import { save, remove } from "@/app/admin/actions";
 import DeleteButton from "@/components/DeleteButton";
 import { authors, categories, type Post } from "@/lib/db";
 
-const input = "mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-[#2d7c26] focus:ring-2 focus:ring-[#2d7c26]/20";
+const input = "mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-deep focus:ring-2 focus:ring-deep/20";
 const card = "rounded-xl border border-slate-200 bg-white p-4 shadow-sm";
 const label = "block text-sm font-semibold text-slate-700";
 const ERRORS: Record<string, string> = {
@@ -70,7 +70,7 @@ export default async function PostForm({ post, selected = [], error, saved }: { 
         </div>
         <div className="sticky bottom-0 -mx-4 mt-5 flex items-center justify-end gap-3 border-t border-slate-200 bg-white/90 px-4 py-3 backdrop-blur">
           <Link href="/admin" className="text-sm font-semibold text-slate-600 hover:text-slate-900">Cancel</Link>
-          <button className="rounded-lg bg-[#2d7c26] px-6 py-2 font-semibold text-white hover:bg-[#256620]">Save</button>
+          <button className="rounded-lg bg-deep px-6 py-2 font-semibold text-white hover:bg-jade">Save</button>
         </div>
       </form>
       {post && (
