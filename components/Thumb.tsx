@@ -10,8 +10,11 @@ export default function Thumb({ src, className = "", priority }: { src: string |
       {src ? (
         <Image src={src} alt="" fill sizes={SIZES} priority={priority} className="object-cover" />
       ) : (
-        // no featured image: a gold eight-point star instead of a broken-looking box
-        <svg aria-hidden viewBox="0 0 64 64" className="size-2/5 min-w-5 max-w-14 text-gold/70" fill="currentColor"><path d="M32 4l7 17 17-7-7 17 17 7-17 7 7 17-17-7-7 17-7-17-17 7 7-17-17-7 17-7-7-17 17 7z" /></svg>
+        // no featured image: both site logos as a faint grey watermark on the patterned background
+        <div aria-hidden className="flex w-full flex-col items-center gap-[6%] opacity-30 grayscale">
+          <Image src="/logo.png" alt="" width={300} height={99} className="h-auto w-[52%] max-w-52" />
+          <Image src="/islamonlive-logo.png" alt="" width={298} height={81} className="h-auto w-[52%] max-w-52" />
+        </div>
       )}
     </div>
   );
