@@ -31,7 +31,7 @@ function Item({ item, names, nested = false }: { item: MenuItem; names: Map<numb
 export default function Nav({ names }: { names: Map<number, string> }) {
   const all = new Map(names).set(MORE, "മറ്റുള്ളവ");
   return (
-    <nav aria-label="Main" className="geo relative z-40 border-y border-gold/40 bg-deep shadow-lg md:sticky md:top-0">
+    <nav aria-label="Main" className="geo relative z-40 border-y border-gold/40 bg-deep shadow-lg md:sticky md:top-0 md:overflow-x-clip">
       {/* CSS-only phone menu: the checkbox is toggled by the hamburger label */}
       <input type="checkbox" id="menu-toggle" aria-label="Menu" className="peer sr-only" />
       <div className="flex items-center justify-between px-2 text-ivory md:hidden">

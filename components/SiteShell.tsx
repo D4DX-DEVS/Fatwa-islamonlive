@@ -14,7 +14,7 @@ export default async function SiteShell({ children }: { children: React.ReactNod
 
       <div className="bg-ink text-champagne/80">
         <div className="mx-auto flex min-h-11 max-w-7xl items-center justify-between gap-4 px-4 text-xs font-semibold uppercase tracking-[0.2em]">
-          <p className="truncate"><span className="sm:hidden">Malayalam fatwa portal</span><span className="max-sm:hidden">The comprehensive fatwa portal in Malayalam</span></p>
+          <p className="truncate"><span className="sm:hidden">Fatwa portal</span><span className="max-sm:hidden">The comprehensive fatwa portal in Malayalam</span></p>
           <p className="flex shrink-0 gap-3">
             <a href={FOOTER_LINKS[0].href} className="flex min-h-11 items-center px-2 transition-colors hover:text-gold">Support us</a>
             <Link href="/feed.xml" className="flex min-h-11 items-center px-2 max-sm:hidden transition-colors hover:text-gold">RSS</Link>
@@ -24,10 +24,10 @@ export default async function SiteShell({ children }: { children: React.ReactNod
 
       <header className="geo bg-ivory">
         <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-4">
-          <Link href="/" className="rise shrink-0"><Image src="/logo.png" alt="Fatwa Islamonlive" width={300} height={99} priority className="h-[52px] w-auto sm:h-[68px]" /></Link>
-          <form action="/search" role="search" className="group/search rise relative ml-auto [--i:1]">
+          <Link href="/" className="rise shrink-0"><Image src="/logo.png" alt="Fatwa Islamonlive" width={300} height={99} priority className="h-11 w-auto min-[380px]:h-[52px] sm:h-[68px]" /></Link>
+          <form action="/search" role="search" className="group/search rise relative ml-auto [--i:1] max-sm:min-w-0 max-sm:flex-1">
             <svg aria-hidden width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gold"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
-            <input name="q" placeholder="Search…" aria-label="Search" className="w-32 rounded-full border border-gold/50 bg-paper py-2.5 pl-11 pr-4 text-sm font-medium outline-none transition-all duration-500 placeholder:text-ink/40 focus:w-44 focus:border-gold focus:ring-4 focus:ring-gold/25 sm:w-64 sm:focus:w-80" />
+            <input name="q" placeholder="Search…" aria-label="Search" className="w-full rounded-full border border-gold/50 bg-paper py-2.5 pl-11 pr-4 text-sm font-medium outline-none transition-all duration-500 placeholder:text-ink/40 focus:border-gold focus:ring-4 focus:ring-gold/25 sm:w-64 sm:focus:w-80" />
           </form>
           <a href="https://www.islamonlive.in" aria-label="Islamonlive" className="rise hidden shrink-0 transition-transform duration-500 hover:scale-105 md:block [--i:2]"><Image src="/islamonlive-logo.png" alt="Islamonlive" width={298} height={81} className="h-[54px] w-auto" /></a>
         </div>
@@ -58,7 +58,7 @@ export default async function SiteShell({ children }: { children: React.ReactNod
           <p className="max-w-3xl text-3xl font-extrabold leading-snug text-ivory sm:text-5xl sm:leading-tight">
             The one and only comprehensive <span className="text-gold">Fatwa</span> portal in Malayalam.
           </p>
-          <div className="mt-12 grid gap-10 md:grid-cols-[1fr_1.6fr]">
+          <div className="mt-12 grid grid-cols-1 gap-10 md:grid-cols-[1fr_1.6fr]">
             <div>
               <span className="inline-block rounded-2xl bg-ivory p-3.5"><Image src="/islamonlive-logo.png" alt="Islamonlive" width={298} height={81} className="h-11 w-auto" /></span>
               <nav aria-label="Footer" className="mt-8">

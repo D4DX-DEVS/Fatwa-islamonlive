@@ -16,7 +16,7 @@ export default async function PostForm({ post, selected = [], error, saved }: { 
   const [authorList, categoryList] = await Promise.all([authors(), categories()]);
   return (
     <>
-      <div className="mb-5 flex items-center gap-3">
+      <div className="mb-5 flex flex-wrap items-center gap-3">
         <Link href="/admin" className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold hover:bg-slate-100">← Back to posts</Link>
         <h1 className="text-xl font-bold">{post ? "Edit post" : "New post"}</h1>
         {post && <Link href={`/post/${post.id}`} target="_blank" className="ml-auto text-sm text-slate-500 hover:text-slate-900">View post ↗</Link>}
@@ -24,7 +24,7 @@ export default async function PostForm({ post, selected = [], error, saved }: { 
       {saved && <p className="mb-4 rounded-lg bg-green-50 px-4 py-2 text-sm text-green-800">Saved. Your changes are live.</p>}
       {error && <p className="mb-4 rounded-lg bg-red-50 px-4 py-2 text-sm text-red-700">{ERRORS[error] ?? "Something went wrong."}</p>}
       <form action={save.bind(null, post?.id ?? null)}>
-        <div className="grid gap-5 lg:grid-cols-[1fr_300px]">
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_300px]">
           <div className={`${card} space-y-4`}>
             <label className={label}>Title
               <input name="title" defaultValue={post?.title} required className={`${input} text-base font-semibold`} />

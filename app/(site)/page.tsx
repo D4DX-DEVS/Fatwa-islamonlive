@@ -20,7 +20,7 @@ const SUPPORT = FOOTER_LINKS[0].href;
 function Hero({ posts }: { posts: PostCard[] }) {
   const [main, ...side] = posts;
   return (
-    <section className="grid gap-5 lg:grid-cols-[1.75fr_1fr]">
+    <section className="grid grid-cols-1 gap-5 lg:grid-cols-[1.75fr_1fr]">
       <Link href={`/post/${main.id}`} className="drift zoom group relative isolate block min-h-[27rem] overflow-hidden rounded-[2rem] border border-gold/50 shadow-2xl shadow-deep/30 sm:min-h-[36rem]">
         <Thumb src={main.image} priority className="absolute inset-0 h-full w-full" />
         <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-ink via-ink/55 to-ink/5" />
@@ -131,7 +131,7 @@ function Block({ title, tabs, tone, layout = "card", span = 1, names, items, n }
           <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/25 to-transparent" />
           <span className="absolute inset-x-0 bottom-0 p-5 text-xl font-extrabold leading-snug text-ivory sm:p-6 sm:text-2xl"><span className="sweep">{lead.title}</span></span>
         </Link>
-        <ul className="mt-6 grid gap-x-8 gap-y-4 sm:grid-cols-2">{rest.map((p, i) => <Row key={p.id} p={p} n={i + 1} theme={t} />)}</ul>
+        <ul className="mt-6 grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2">{rest.map((p, i) => <Row key={p.id} p={p} n={i + 1} theme={t} />)}</ul>
       </section>
     );
   }
